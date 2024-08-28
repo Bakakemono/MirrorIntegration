@@ -73,3 +73,7 @@ crashlytics-build.properties
 Assets/ParrelSync/
 
 Assets/ParrelSync.meta
+
+Assets/Plugins/ParrelSync/
+
+Assets/Plugins/ParrelSync.meta
