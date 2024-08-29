@@ -30,6 +30,11 @@ public class SteamLobby : MonoBehaviour {
         _lobbyEnter = Callback<LobbyEnter_t>.Create(OnLobbyEnter);
     }
 
+    public void HostLobby() {
+        SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, _networkManager.maxConnections);
+
+    }
+
     private void OnLobbyCreated(LobbyCreated_t callback) {
         if(callback.m_eResult != EResult.k_EResultOK)
             return;
