@@ -4,6 +4,7 @@ using UnityEngine;
 using Mirror;
 using Steamworks;
 using UnityEngine.UI;
+using System.Runtime.CompilerServices;
 
 public class SteamLobby : MonoBehaviour {
 
@@ -29,4 +30,11 @@ public class SteamLobby : MonoBehaviour {
         SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), HostAddressKey, SteamUser.GetSteamID().ToString());
         SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), "name", SteamFriends.GetPersonaName().ToString() + "'s Lobby");
     }
+
+    private void OnJoinedRequest(GameLobbyJoinRequested_t callback) {
+        Debug.Log("Request to join Lobby");
+        SteamMatchmaking.JoinLobby(callback.m_steamIDLobby);
+    }
+
+
 }
