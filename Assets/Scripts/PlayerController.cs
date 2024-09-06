@@ -8,23 +8,29 @@ using UnityEngine.SceneManagement;
 public class PlayerController : NetworkBehaviour {
 
     [SerializeField] GameObject playerModel;
+    [SerializeField] Transform _cameraPosTransform;
 
     public override void OnStartLocalPlayer() {
-        base.OnStartLocalPlayer();
+        Transform cameraTransform = Camera.main.transform;
+        cameraTransform.parent = _cameraPosTransform;
+        cameraTransform.position = _cameraPosTransform.position;
+        cameraTransform.rotation = _cameraPosTransform.rotation;
     }
 
+
     private void Start() {
-        playerModel.SetActive(false);
+        //playerModel.SetActive(false);
     }
 
     private void Update() {
-        if(SceneManager.GetActiveScene().name == "Game") {
-            if(!playerModel.activeSelf) {
-                playerModel.SetActive(true);
-            }
+        //if(SceneManager.GetActiveScene().name == "Game") {
+        //    if(!playerModel.activeSelf) {
+        //        playerModel.SetActive(true);
+        //    }
 
-            Movement();
-        }
+        //    Movement();
+        //}
+        Movement();
     }
 
     private void Movement() {
