@@ -14,7 +14,7 @@ public class CustomSteamNetworkManager : NetworkManager {
         }
     }
 
-    public void StartGame(string SceneName) {
-
+    public void StartGame(string sceneName) {
+        ServerChangeScene(sceneName);
     }
 }

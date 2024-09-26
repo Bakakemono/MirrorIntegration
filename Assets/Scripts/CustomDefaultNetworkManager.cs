@@ -10,6 +10,14 @@ using Mirror;
 
 public class CustomDefaultNetworkManager : NetworkManager
 {
+    [Header("Custom Variables")]
+    // Variables
+    [SerializeField] string _lobbySceneName = "Lobby";
+    [SerializeField] PlayerController _playerController;
+
+
+
+
     // Overrides the base singleton so we don't
     // have to cast to this type everywhere.
     public static new CustomDefaultNetworkManager singleton => (CustomDefaultNetworkManager)NetworkManager.singleton;
@@ -149,12 +157,14 @@ public class CustomDefaultNetworkManager : NetworkManager
     /// <param name="conn">Connection from client.</param>
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
-        base.OnServerAddPlayer(conn);
+        if(SceneManager.GetActiveScene().name == _lobbySceneName) {
+            Instantiate(playerPrefab);
+        }
     }
 
     /// <summary>
     /// Called on the server when a client disconnects.
-    /// <para>This is called on the Server when a Client disconnects from the Server. Use an override to decide what should happen when a disconnection is detected.</para>
+    /// <para>This is called on the Serve r when a Client disconnects from the Server. Use an override to decide what should happen when a disconnection is detected.</para>
     /// </summary>
     /// <param name="conn">Connection from client.</param>
     public override void OnServerDisconnect(NetworkConnectionToClient conn)

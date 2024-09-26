@@ -19,6 +19,7 @@ public class PlayerController : NetworkBehaviour {
 
 
     private void Start() {
+        DontDestroyOnLoad(this.gameObject);
         //playerModel.SetActive(false);
     }
 
@@ -30,19 +31,19 @@ public class PlayerController : NetworkBehaviour {
 
         //    Movement();
         //}
+
+        if(!isLocalPlayer)
+            return;
+
         Movement();
     }
 
     private void Movement() {
-        if(!isLocalPlayer)
-            return;
-
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
         Vector3 playerMovement = new Vector3(h, 0, v) * 0.5f;
 
         transform.position += playerMovement;
-
     }
 }
