@@ -1,11 +1,18 @@
 using Mirror;
+using Steamworks;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class PlayerController : NetworkBehaviour {
+public class PlayerControllerSteam : NetworkBehaviour {
+
+    //Player Data
+    [SyncVar] public int _connectionID;
+    [SyncVar] public int _playerIdNumber;
+    [SyncVar] public ulong _playerSteamID;
+    [SyncVar(hook = nameof(PlayerNameUpdate))] public string _playerName;   
 
     [SerializeField] GameObject playerModel;
     [SerializeField] Transform _cameraPosTransform;
@@ -45,5 +52,9 @@ public class PlayerController : NetworkBehaviour {
         Vector3 playerMovement = new Vector3(h, 0, v) * 0.5f;
 
         transform.position += playerMovement;
+    }
+
+    private void PlayerNameUpdate() {
+        
     }
 }

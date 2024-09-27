@@ -5,12 +5,12 @@ using Mirror;
 using UnityEngine.SceneManagement;
 
 public class CustomSteamNetworkManager : NetworkManager {
-    [SerializeField] private PlayerController _playerPrefab;
-    public List<PlayerController> _players { get; } = new List<PlayerController>();
+    [SerializeField] private PlayerControllerSteam _playerController;
+    public List<PlayerControllerSteam> _players { get; } = new List<PlayerControllerSteam>();
 
     public override void OnServerAddPlayer(NetworkConnectionToClient connection) {
         if(SceneManager.GetActiveScene().name == "Lobby") {
-            PlayerController playerInstance = Instantiate(_playerPrefab);
+            PlayerControllerSteam playerInstance = Instantiate(_playerController);
         }
     }
 

@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Mirror;
+using JetBrains.Annotations;
 
 /*
 	Documentation: https://mirror-networking.gitbook.io/docs/components/network-manager
@@ -13,10 +14,9 @@ public class CustomDefaultNetworkManager : NetworkManager
     [Header("Custom Variables")]
     // Variables
     [SerializeField] string _lobbySceneName = "Lobby";
-    [SerializeField] PlayerController _playerController;
+    [SerializeField] PlayerControllerSteam _playerPrefab;
 
-
-
+    const int MAX_CONNEXION_NMB = 2;
 
     // Overrides the base singleton so we don't
     // have to cast to this type everywhere.
@@ -45,6 +45,7 @@ public class CustomDefaultNetworkManager : NetworkManager
     public override void Start()
     {
         base.Start();
+        maxConnections = MAX_CONNEXION_NMB;
     }
 
     /// <summary>
@@ -225,7 +226,8 @@ public class CustomDefaultNetworkManager : NetworkManager
     /// This is invoked when a host is started.
     /// <para>StartHost has multiple signatures, but they all cause this hook to be called.</para>
     /// </summary>
-    public override void OnStartHost() { }
+    public override void OnStartHost() {
+    }
 
     /// <summary>
     /// This is invoked when a server is started - including when a host is started.
