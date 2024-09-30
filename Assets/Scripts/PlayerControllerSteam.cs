@@ -14,6 +14,17 @@ public class PlayerControllerSteam : NetworkBehaviour {
     [SyncVar] public ulong _playerSteamID;
     [SyncVar(hook = nameof(PlayerNameUpdate))] public string _playerName;   
 
+    private CustomSteamNetworkManager _NetworkManager;
+
+    private CustomSteamNetworkManager _networkManager {
+        get {
+            if(_NetworkManager != null) {
+                return _NetworkManager;
+            }
+            return _NetworkManager = CustomSteamNetworkManager.singleton as CustomSteamNetworkManager;
+        }
+    }
+
     [SerializeField] GameObject playerModel;
     [SerializeField] Transform _cameraPosTransform;
 
@@ -54,7 +65,7 @@ public class PlayerControllerSteam : NetworkBehaviour {
         transform.position += playerMovement;
     }
 
-    private void PlayerNameUpdate() {
+    private void PlayerNameUpdate(string oldValue, string newValue) {
         
     }
 }

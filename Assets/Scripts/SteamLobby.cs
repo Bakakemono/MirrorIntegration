@@ -5,6 +5,7 @@ using Mirror;
 using Steamworks;
 using UnityEngine.UI;
 using TMPro;
+using UnityEditorInternal;
 
 public class SteamLobby : MonoBehaviour {
 
@@ -18,6 +19,17 @@ public class SteamLobby : MonoBehaviour {
 
     public GameObject _hostButton;
     public TMP_Text _lobbyName;
+
+    public static SteamLobby _instance;
+
+    private void Awake() {
+        if(_instance == null) {
+            _instance = this;
+        }
+        else {
+            Destroy(this);
+        }
+    }
 
     private void Start() {
         if(!SteamManager.Initialized)
