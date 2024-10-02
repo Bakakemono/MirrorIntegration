@@ -30,6 +30,19 @@ public class PlayerListItem : MonoBehaviour {
         }
     }
 
+    public void SetPlayerValue() {
+        _playerNameText.text = _playerName;
+        if(!_avatarReceived)
+            GetPlayerIcon();
+    }
+
+    private void GetPlayerIcon() {
+        int imageID = SteamFriends.GetLargeFriendAvatar((CSteamID)_playerSteamID);
+
+        if(imageID == -1)
+            return;
+    }
+
     private Texture2D GetSteamImageAsTexture(int iImage) {
         Texture2D texture = null;
         bool isValid = SteamUtils.GetImageSize(iImage, out uint width, out uint height);
