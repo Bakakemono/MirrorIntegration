@@ -6,17 +6,22 @@ using UnityEngine.SceneManagement;
 using Steamworks;
 
 public class CustomSteamNetworkManager : NetworkManager {
-    [SerializeField] private PlayerControllerSteam _playerController;
-    public List<PlayerControllerSteam> _players { get; } = new List<PlayerControllerSteam>();
+    [SerializeField] public SteamPlayerController _playerController;
+    
+    public List<SteamPlayerController> _players { get; } = new List<SteamPlayerController>();
 
     public override void OnServerAddPlayer(NetworkConnectionToClient connection) {
-        if(SceneManager.GetActiveScene().name == "Lobby") {
-            PlayerControllerSteam playerInstance = Instantiate(_playerController);
+        if(SceneManager.GetActiveScene().name == "S_Lobby") {
+            SteamPlayerController playerInstance = Instantiate(_playerController);
 
             playerInstance._connectionID = connection.connectionId;
-            playerInstance._playerIdNumber = _players.Count + 1;
-            playerInstance._playerSteamID = (ulong)SteamMatchmaking.GetLobbyMemberByIndex((CSteamID)SteamLobby._instance._currentLobbyID, _players.Count);
-
+            //playerInstance._playerIdNumber = _players.Count + 1;
+            playerInstance._playerSteamID =
+                (ulong)SteamMatchmaking.GetLobbyMemberByIndex(
+                    (CSteamID)SteamLobby._instance._currentLobbyID,
+                    _players.Count
+                    );
+            
             NetworkServer.AddPlayerForConnection(connection, playerInstance.gameObject);
         }
     }

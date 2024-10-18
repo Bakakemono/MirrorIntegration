@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerListItem : MonoBehaviour {
+public class SteamPlayerListItem : MonoBehaviour {
     public string _playerName;
     public int _connectionID;
     public ulong _playerSteamID;
@@ -41,6 +41,8 @@ public class PlayerListItem : MonoBehaviour {
 
         if(imageID == -1)
             return;
+
+        _playerIcon.texture = GetSteamImageAsTexture(imageID);
     }
 
     private Texture2D GetSteamImageAsTexture(int iImage) {

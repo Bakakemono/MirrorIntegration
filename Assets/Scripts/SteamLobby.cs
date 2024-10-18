@@ -5,7 +5,6 @@ using Mirror;
 using Steamworks;
 using UnityEngine.UI;
 using TMPro;
-using UnityEditorInternal;
 
 public class SteamLobby : MonoBehaviour {
 
@@ -18,7 +17,7 @@ public class SteamLobby : MonoBehaviour {
     private CustomSteamNetworkManager _networkManager;
 
     public GameObject _hostButton;
-    public TMP_Text _lobbyName;
+    //public TMP_Text _lobbyName;
 
     public static SteamLobby _instance;
 
@@ -44,7 +43,6 @@ public class SteamLobby : MonoBehaviour {
 
     public void HostLobby() {
         SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, _networkManager.maxConnections);
-
     }
 
     private void OnLobbyCreated(LobbyCreated_t callback) {
@@ -57,6 +55,7 @@ public class SteamLobby : MonoBehaviour {
 
         SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), HostAddressKey, SteamUser.GetSteamID().ToString());
         SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), "name", SteamFriends.GetPersonaName().ToString() + "'s Lobby");
+        GameManager._instance.StartHost();
     }
 
     private void OnJoinedRequest(GameLobbyJoinRequested_t callback) {
@@ -68,8 +67,8 @@ public class SteamLobby : MonoBehaviour {
         //Everyone
         _hostButton.SetActive(false);
         _currentLobbyID = callback.m_ulSteamIDLobby;
-        _lobbyName.gameObject.SetActive(true);
-        _lobbyName.text = SteamMatchmaking.GetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), "name");
+        //_lobbyName.gameObject.SetActive(true);
+        //_lobbyName.text = SteamMatchmaking.GetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), "name");
 
         //client
         if(NetworkServer.active)

@@ -1,12 +1,14 @@
+using JetBrains.Annotations;
 using Mirror;
 using Steamworks;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class PlayerControllerSteam : NetworkBehaviour {
+public class SteamPlayerController : NetworkBehaviour {
 
     //Player Data
     [SyncVar] public int _connectionID;
@@ -37,8 +39,39 @@ public class PlayerControllerSteam : NetworkBehaviour {
 
 
     private void Start() {
-        DontDestroyOnLoad(this.gameObject);
+        DontDestroyOnLoad(gameObject);
         //playerModel.SetActive(false);
+    }
+
+    public override void OnStartAuthority() {
+        CmdSetPlayerName(SteamFriends.GetPersonaName());
+        gameObject.name = "LocalGamePlayer";
+        SteamLobbyController._instance.FindLocalPlayer();
+        SteamLobbyController._instance.UpdateLobbyName();
+    }
+
+    public override void OnStartClient() {
+        _NetworkManager._players.Add(this);
+        SteamLobbyController._instance.UpdateLobbyName();
+        SteamLobbyController._instance.UpdatePlayerList();
+    }
+
+    public override void OnStopClient() {
+        _networkManager._players.Remove(this);
+        SteamLobbyController._instance.UpdatePlayerList();
+    }
+
+    [Command]
+    private void CmdSetPlayerName(string name) {
+        this.PlayerNameUpdate(this._playerName, name);
+    }
+    private void PlayerNameUpdate(string oldValue, string newValue) {
+        if(isServer) {
+            this._playerName = newValue;
+        }
+        if(isClient) {
+            SteamLobbyController._instance.UpdatePlayerList();
+        }
     }
 
     private void Update() {
@@ -52,7 +85,7 @@ public class PlayerControllerSteam : NetworkBehaviour {
 
         if(!isLocalPlayer)
             return;
-
+        
         Movement();
     }
 
@@ -63,9 +96,5 @@ public class PlayerControllerSteam : NetworkBehaviour {
         Vector3 playerMovement = new Vector3(h, 0, v) * 0.5f;
 
         transform.position += playerMovement;
-    }
-
-    private void PlayerNameUpdate(string oldValue, string newValue) {
-        
     }
 }

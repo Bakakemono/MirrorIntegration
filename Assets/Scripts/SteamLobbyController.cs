@@ -21,12 +21,12 @@ public class SteamLobbyController : MonoBehaviour {
     // Other Data
     public ulong _currentLobbyID;
     public bool _playerItemCreated = false;
-    private List<PlayerListItem> _playerListItems = new List<PlayerListItem>();
-    public PlayerControllerSteam _localPlayerController;
+    private List<SteamPlayerListItem> _playerListItems = new List<SteamPlayerListItem>();
+    public SteamPlayerController _localPlayerController;
 
     // Manager
     private CustomSteamNetworkManager _NetworkManager;
-    private CustomSteamNetworkManager _networkManager{
+    private CustomSteamNetworkManager _networkManager {
         get {
             if(_NetworkManager != null)
                 return _NetworkManager;
@@ -60,22 +60,73 @@ public class SteamLobbyController : MonoBehaviour {
     }
 
     public void FindLocalPlayer() {
-        //_localPlayerController =  GameObject.Find()
+        _localPlayerObject = GameObject.Find("LocalGamePlayer");
+        _localPlayerController = _localPlayerObject.GetComponent<SteamPlayerController>();
     }
 
     public void CreateHostPlayerItem() {
+        foreach(SteamPlayerController player in _networkManager._players) {
+            GameObject newPlayerItem = Instantiate(_playerListItemPrefab) as GameObject;
+            SteamPlayerListItem newPlayerItemScript = newPlayerItem.GetComponent<SteamPlayerListItem>();
 
+            newPlayerItemScript._playerName = player._playerName;
+            newPlayerItemScript._connectionID = player._connectionID;
+            newPlayerItemScript._playerSteamID = player._playerSteamID;
+            newPlayerItemScript.SetPlayerValue();
+
+            newPlayerItem.transform.SetParent(_playerListViewContent.transform);
+            newPlayerItem.transform.localScale = Vector3.one;
+
+            _playerListItems.Add(newPlayerItemScript);
+        }
+
+        _playerItemCreated = true;
     }
 
     public void CreateClientPlayerItem() {
+        foreach(SteamPlayerController player in _networkManager._players) {
+            if(!_playerListItems.Any(b => b._connectionID == player._connectionID)) {
+                GameObject newPlayerItem = Instantiate(_playerListItemPrefab);
+                SteamPlayerListItem newPlayerItemScript = newPlayerItem.GetComponent<SteamPlayerListItem>();
 
+                newPlayerItemScript._playerName = player._playerName;
+                newPlayerItemScript._connectionID = player._connectionID;
+                newPlayerItemScript._playerSteamID = player._playerSteamID;
+                newPlayerItemScript.SetPlayerValue();
+
+                newPlayerItem.transform.SetParent(_playerListViewContent.transform);
+                newPlayerItem.transform.localScale = Vector3.one;
+
+                _playerListItems.Add(newPlayerItemScript);
+            }
+        }
     }
 
     public void UpdatePlayerItem() {
-
+        foreach(SteamPlayerController player in _networkManager._players) {
+            foreach(SteamPlayerListItem playerListItemScript in _playerListItems) {
+                if(playerListItemScript._connectionID == player._connectionID) {
+                    playerListItemScript._playerName = player._playerName;
+                    playerListItemScript.SetPlayerValue();
+                }
+            }
+        }
     }
 
     public void RemoveClientPlayerItem() {
+        List<SteamPlayerListItem> playerListItemsToRemove = new List<SteamPlayerListItem>();
 
+        foreach(SteamPlayerListItem playerlistItem in _playerListItems) {
+            if(!_networkManager._players.Any(b => b._connectionID == playerlistItem._connectionID)){
+                playerListItemsToRemove.Add(playerlistItem);
+            }
+        }
+        if(playerListItemsToRemove.Count > 0) {
+            foreach(SteamPlayerListItem playerListItemToRemove in playerListItemsToRemove) {
+                GameObject objectToRemove = playerListItemToRemove.gameObject;
+                _playerListItems.Remove(playerListItemToRemove);
+                Destroy(objectToRemove);
+            }
+        }
     }
 }
