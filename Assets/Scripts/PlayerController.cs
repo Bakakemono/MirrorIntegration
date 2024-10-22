@@ -7,6 +7,14 @@ public class PlayerController : NetworkBehaviour {
     [SyncVar] public int _connectionID;
     [SyncVar] public int _playerIdNumber;
 
+    [Header("Girl Body Params")]
+    [SerializeField] private GameObject _girlModel;
+    [SerializeField] private Vector3 _girlSize;
+
+    [Header("Boy Body Params")]
+    [SerializeField] private GameObject _boyModel;
+    [SerializeField] private Vector3 _boySize;
+
     [SerializeField] GameObject _model;
     Rigidbody _rigidbody;
 
