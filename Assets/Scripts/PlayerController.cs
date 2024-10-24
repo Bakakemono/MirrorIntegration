@@ -35,11 +35,17 @@ public class PlayerController : NetworkBehaviour {
             cameraTransform.position = _cameraPosition.position;
             cameraTransform.rotation = _cameraPosition.rotation;
             cameraTransform.parent = transform;
+
+            _playerControl = new PlayerControl();
+            
+            CMD_ChooseModel(isServer);
         }
-        _playerControl = new PlayerControl();
     }
 
     private void OnEnable() {
+        if(!isLocalPlayer)
+            return;
+
         _movementAction = _playerControl.Player.Movement;
         _movementAction.Enable();
 
@@ -50,6 +56,9 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void OnDisable() {
+        if(!isLocalPlayer)
+            return;
+
         _playerControl.Player.Movement.Disable();
         _playerControl.Player.Jump.Disable();
         _playerControl.Player.Grab.Disable();
@@ -69,6 +78,7 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void Movement() {
+        Debug.Log("Movement Action Value : " + _movementAction.ReadValue<Vector2>());
         Vector2 movement = _movementAction.ReadValue<Vector2>();
 
         Vector3 playerMovement = new Vector3(movement.x, 0, movement.y) * _speed;
@@ -91,5 +101,25 @@ public class PlayerController : NetworkBehaviour {
 
     private void OnGrab(InputAction.CallbackContext context) {
         
+    }
+
+    [Command]
+    void CMD_ChooseModel(bool isGirl) {
+        RPC_SwitchModel(isGirl);
+    }
+
+    [ClientRpc]
+    private void RPC_SwitchModel(bool isGirl) {
+        CapsuleCollider capsuleCollider = GetComponent<CapsuleCollider>();
+        if(isGirl) {
+            _girlModel.SetActive(true);
+            capsuleCollider.radius = _girlSize.x / 2f;
+            capsuleCollider.height = _girlSize.y;
+        }
+        else {
+            _boyModel.SetActive(true);
+            capsuleCollider.radius = _boySize.x / 2f;
+            capsuleCollider.height = _boySize.y;
+        }
     }
 }
