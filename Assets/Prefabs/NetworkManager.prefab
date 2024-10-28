@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6809166457126545003}
   - component: {fileID: 2270704673324690268}
-  - component: {fileID: 372006986883282834}
   - component: {fileID: 3850337926218232971}
   m_Layer: 0
   m_Name: NetworkManager
@@ -83,20 +82,6 @@ MonoBehaviour:
   timeInterpolationGui: 0
   _lobbySceneName: S_Lobby
   _playerPrefab: {fileID: 4698119956060644890, guid: 6dcdca14a1904bb43811f77d85d30f9f, type: 3}
---- !u!114 &372006986883282834
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7989544293103560906}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6442dc8070ceb41f094e44de0bf87274, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  offsetX: 0
-  offsetY: 0
 --- !u!114 &3850337926218232971
 MonoBehaviour:
   m_ObjectHideFlags: 0

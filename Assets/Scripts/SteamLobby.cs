@@ -16,9 +16,6 @@ public class SteamLobby : MonoBehaviour {
     private const string HostAddressKey = "HostAdress";
     private CustomDefaultNetworkManager _networkManager;
 
-    public GameObject _hostButton;
-    //public TMP_Text _lobbyName;
-
     public static SteamLobby _instance;
 
     private void Awake() {

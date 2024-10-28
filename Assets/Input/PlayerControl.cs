@@ -169,13 +169,7 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
             ]
         }
     ],
-    ""controlSchemes"": [
-        {
-            ""name"": ""PlayerControl"",
-            ""bindingGroup"": ""PlayerControl"",
-            ""devices"": []
-        }
-    ]
+    ""controlSchemes"": []
 }");
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
@@ -301,15 +295,6 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
         }
     }
     public PlayerActions @Player => new PlayerActions(this);
-    private int m_PlayerControlSchemeIndex = -1;
-    public InputControlScheme PlayerControlScheme
-    {
-        get
-        {
-            if (m_PlayerControlSchemeIndex == -1) m_PlayerControlSchemeIndex = asset.FindControlSchemeIndex("PlayerControl");
-            return asset.controlSchemes[m_PlayerControlSchemeIndex];
-        }
-    }
     public interface IPlayerActions
     {
         void OnMovement(InputAction.CallbackContext context);

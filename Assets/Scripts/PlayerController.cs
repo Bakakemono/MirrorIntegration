@@ -1,6 +1,9 @@
 using Mirror;
+using Org.BouncyCastle.Asn1.BC;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,6 +13,7 @@ public class PlayerController : NetworkBehaviour {
 
     PlayerControl _playerControl;
     InputAction _movementAction;
+    Vector2 _previousMovementInputValue = Vector2.zero;
 
     [Header("Girl Body Params")]
     [SerializeField] private GameObject _girlModel;
@@ -22,11 +26,15 @@ public class PlayerController : NetworkBehaviour {
 
     [Header("Parameters")]
     [SerializeField] float _speed = 1;
-    [SerializeField] float _jumpVelocity = 6f;
+    [SerializeField] float _jumpHeight = 1f;
     bool _doJump = false;
     [SerializeField] Transform _cameraPosition;
     Rigidbody _rigidbody;
 
+    bool _playerBodySelected = false;
+    bool _isReady = false;
+    float _loadingTime = 0.2f;
+    float _timeWhenLoadingStart = 0f;
     private void Start() {
         DontDestroyOnLoad(gameObject);
         _rigidbody = GetComponent<Rigidbody>();
@@ -37,9 +45,17 @@ public class PlayerController : NetworkBehaviour {
             cameraTransform.parent = transform;
 
             _playerControl = new PlayerControl();
-            
-            CMD_ChooseModel(isServer);
+            _movementAction = _playerControl.Player.Movement;
+            _movementAction.Enable();
+
+            _playerControl.Player.Jump.performed += OnJump;
+            _playerControl.Player.Jump.Enable();
+
+            _playerControl.Player.Grab.Enable();
+
+            //CMD_ChooseModel(isServer);
         }
+        _timeWhenLoadingStart += Time.time;
     }
 
     private void OnEnable() {
@@ -74,12 +90,20 @@ public class PlayerController : NetworkBehaviour {
         if(!isLocalPlayer)
             return;
 
+        if(!_playerBodySelected && _timeWhenLoadingStart + _loadingTime < Time.time) {
+            CMD_ChooseModel(isServer);
+        }
+
         Movement();
     }
 
     private void Movement() {
-        Debug.Log("Movement Action Value : " + _movementAction.ReadValue<Vector2>());
         Vector2 movement = _movementAction.ReadValue<Vector2>();
+        if(movement != Vector2.zero)
+            movement = movement / movement.magnitude * Mathf.Clamp(movement.magnitude, 0f, 1f);
+
+        movement = Vector2.Lerp(_previousMovementInputValue, movement, 0.08f);
+        _previousMovementInputValue = movement;
 
         Vector3 playerMovement = new Vector3(movement.x, 0, movement.y) * _speed;
 
@@ -90,7 +114,7 @@ public class PlayerController : NetworkBehaviour {
                 Mathf.Lerp(_rigidbody.velocity.z, playerMovement.z, 0.3f));
 
         if(_doJump) {
-            _rigidbody.velocity += Vector3.up * _jumpVelocity;
+            _rigidbody.velocity += Vector3.up * Mathf.Sqrt(2 * -Physics.gravity.y * (_jumpHeight));
             _doJump = false;
         }
     }
@@ -121,5 +145,6 @@ public class PlayerController : NetworkBehaviour {
             capsuleCollider.radius = _boySize.x / 2f;
             capsuleCollider.height = _boySize.y;
         }
+        _playerBodySelected = true;
     }
 }

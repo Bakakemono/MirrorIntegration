@@ -58,12 +58,11 @@ MonoBehaviour:
   _connectionID: 0
   _playerIdNumber: 0
   _girlModel: {fileID: 5133196223342230455}
-  _girlSize: {x: 1, y: 1.5, z: 1}
+  _girlSize: {x: 0.6, y: 1.5, z: 0.6}
   _boyModel: {fileID: 4021945794750958968}
-  _boySize: {x: 1.2, y: 1, z: 1.2}
-  _model: {fileID: 0}
-  _speed: 15
-  _jumpVelocity: 6
+  _boySize: {x: 1, y: 1, z: 1}
+  _speed: 3
+  _jumpHeight: 1
   _cameraPosition: {fileID: 6167485950547064502}
 --- !u!114 &6616196066788443688
 MonoBehaviour:
@@ -123,7 +122,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5664766123174912424}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: b9a1e977293757e46907175ccb664104, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -164,7 +163,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!114 &5926712594808598385
 MonoBehaviour:
