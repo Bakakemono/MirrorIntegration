@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameManager : MonoBehaviour {
+public class SteamGameManager : MonoBehaviour {
     
-    public static GameManager _instance;
+    public static SteamGameManager _instance;
     List<PlayerController> _players = new List<PlayerController>();
     bool _arePlayersSpawned = false;
 
     void Start () {
+
         // Making sure there is only one instance of Game Manager
         if(_instance == null) {
             _instance = this;
@@ -20,7 +21,6 @@ public class GameManager : MonoBehaviour {
             Destroy(this);
             return;
         }
-
         transform.parent = null;
         DontDestroyOnLoad(gameObject);
 
@@ -39,9 +39,7 @@ public class GameManager : MonoBehaviour {
     
     public void StartHost() {
         if(!CustomDefaultNetworkManager.singleton.isNetworkActive)
-            CustomDefaultNetworkManager.singleton.StartHost();
-
-        CustomDefaultNetworkManager.singleton.ServerChangeScene("S_Lobby");
+            SteamLobby._instance.HostLobby();
         //CustomDefaultNetworkManager.singleton.OnServerAddPlayer()
     }
 

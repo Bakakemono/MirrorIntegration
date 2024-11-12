@@ -46,17 +46,18 @@ public class SteamLobby : MonoBehaviour {
         if(callback.m_eResult != EResult.k_EResultOK)
             return;
 
-        Debug.Log("Lobby Created Successfully");
+        Debug.Log("Steam Lobby Created Successfully");
 
         _networkManager.StartHost();
 
         SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), HostAddressKey, SteamUser.GetSteamID().ToString());
         SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), "name", SteamFriends.GetPersonaName().ToString() + "'s Lobby");
-        GameManager._instance.StartHost();
+
+        CustomDefaultNetworkManager.singleton.ServerChangeScene("S_Lobby");
     }
 
     private void OnJoinedRequest(GameLobbyJoinRequested_t callback) {
-        Debug.Log("Request to join Lobby");
+        Debug.Log("Steam Request to join Lobby");
         SteamMatchmaking.JoinLobby(callback.m_steamIDLobby);
     }
 
