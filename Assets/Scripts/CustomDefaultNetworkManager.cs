@@ -154,13 +154,14 @@ public class CustomDefaultNetworkManager : NetworkManager {
             _connections.Add(conn);
 
         if(_connections.Count == maxConnections)
-            GameManager._instance.SpawnPlayers();
+            SteamGameManager._instance.SpawnPlayers();
+            //GameManager._instance.SpawnPlayers();
     }
     
     public void SpawnPlayers() {
         if(_connections.Count == 0)
             return;
-
+        Debug.Log("Spawning Players");
         foreach(NetworkConnectionToClient conn in _connections) {
             PlayerController playerInstance = Instantiate(_playerPrefab);
 
@@ -170,7 +171,9 @@ public class CustomDefaultNetworkManager : NetworkManager {
             NetworkServer.AddPlayerForConnection(conn, playerInstance.gameObject);
         }
 
-        GameManager._instance.OnPlayerSpawned();
+        Debug.Log("Spawning Player Successful");
+        SteamGameManager._instance.OnPlayerSpawned();
+        //GameManager._instance.OnPlayerSpawned();
     }
 
     /// <summary>

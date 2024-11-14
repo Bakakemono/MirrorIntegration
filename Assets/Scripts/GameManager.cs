@@ -11,6 +11,10 @@ public class GameManager : MonoBehaviour {
     List<PlayerController> _players = new List<PlayerController>();
     bool _arePlayersSpawned = false;
 
+    bool _doSpawnPlayers = false;
+    [SerializeField] float _spawnPlayersWaitingTime = 1f;
+    float _spawnPlayerTime = 0f;
+
     void Start () {
         // Making sure there is only one instance of Game Manager
         if(_instance == null) {
@@ -27,6 +31,13 @@ public class GameManager : MonoBehaviour {
         CustomDefaultNetworkManager.singleton.networkAddress = "localHost";
 
         SceneManager.activeSceneChanged += ChangedActiveScene;
+    }
+
+    private void Update() {
+        if(_doSpawnPlayers && Time.time > _spawnPlayerTime) {
+            CustomDefaultNetworkManager.singleton.SpawnPlayers();
+            _doSpawnPlayers = false;
+        }
     }
 
     public void QuitGame() {
@@ -50,7 +61,8 @@ public class GameManager : MonoBehaviour {
     }
     
     public void SpawnPlayers() {
-        CustomDefaultNetworkManager.singleton.SpawnPlayers();
+        _doSpawnPlayers = true;
+        _spawnPlayerTime = Time.time + _spawnPlayersWaitingTime;
     }
     public void RegisterPlayer(PlayerController player) {
         _players.Add(player);
