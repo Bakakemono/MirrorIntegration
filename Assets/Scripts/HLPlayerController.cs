@@ -1,120 +1,171 @@
 using Mirror;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class HLPlayerController : MonoBehaviour{
-    PlayerControl _playerControl;
-    InputAction _movementAction;
-    Vector2 _previousMovementInputValue = Vector2.zero;
+public class HLPlayerController : MonoBehaviour
+{
+    private PlayerControl _playerControl;
+    private InputAction _movementAction;
+    private InputAction _jumpAction;
+    private InputAction _runAction;
+    private InputAction _togglePushPullAction;
 
-    [Header("Girl Body Params")]
-    [SerializeField] private GameObject _girlModel;
-    [SerializeField] private Vector3 _girlSize;
+    [Header("Movement Settings")]
+    [SerializeField] private float walkSpeed = 3f;
+    [SerializeField] private float runSpeed = 6f;
+    [SerializeField] private float acceleration = 10f;
+    [SerializeField] private float deceleration = 10f;
 
-    [Header("Boy Body Params")]
-    [SerializeField] private GameObject _boyModel;
-    [SerializeField] private Vector3 _boySize;
+    [Header("Jump Settings")]
+    [SerializeField] private float jumpHeight = 2f;
+    [SerializeField] private float gravityScale = 1f;
+    [SerializeField] private float fallMultiplier = 2.5f;
 
+    [Header("Push/Pull Settings")]
+    [SerializeField] private LayerMask pushableLayer;
 
-    [Header("Parameters")]
-    [SerializeField] float _speed = 1;
-    [SerializeField] float _jumpHeight = 1f;
-    bool _doJump = false;
-    [SerializeField] Transform _cameraPosition;
-    Rigidbody _rigidbody;
-    CapsuleCollider _capsuleCollider;
+    private Rigidbody _rigidbody;
+    private CapsuleCollider _capsuleCollider;
+    private bool _isGrounded = false;
+    private bool _isRunning = false;
+    private bool _isPushPulling = false;
+    private PushableObject _currentPushableObject;
 
-    [SerializeField] bool _isBoy = false;
-    [SerializeField] bool _isGirl = false;
+    public bool IsGrounded => _isGrounded;
+    public bool IsPushPulling => _isPushPulling;
 
+    private void Awake()
+    {
+        _playerControl = new PlayerControl();
+        _movementAction = _playerControl.Player.Movement;
+        _jumpAction = _playerControl.Player.Jump;
+        _runAction = _playerControl.Player.Run;
+        _togglePushPullAction = _playerControl.Player.Grab;
 
-    private void Start() {
-        DontDestroyOnLoad(gameObject);
+        _movementAction.Enable();
+        _jumpAction.Enable();
+        _runAction.Enable();
+        _togglePushPullAction.Enable();
+
+        _jumpAction.performed += OnJump;
+        _runAction.performed += ctx => _isRunning = ctx.ReadValue<float>() > 0.5f;
+        _runAction.canceled += ctx => _isRunning = false;
+        _togglePushPullAction.performed += ctx => TogglePushPullMode();
+    }
+
+    private void Start()
+    {
         _rigidbody = GetComponent<Rigidbody>();
         _capsuleCollider = GetComponent<CapsuleCollider>();
 
-        Transform cameraTransform = Camera.main.transform;
-        cameraTransform.position = _cameraPosition.position;
-        cameraTransform.rotation = _cameraPosition.rotation;
-        cameraTransform.parent = transform;
-
-        _playerControl = new PlayerControl();
-        _movementAction = _playerControl.Player.Movement;
-        _movementAction.Enable();
-
-        _playerControl.Player.Jump.performed += OnJump;
-        _playerControl.Player.Jump.Enable();
-
-        _playerControl.Player.Grab.Enable();
-    }
-
-    //private void OnEnable() {
-    //    _movementAction = _playerControl.Player.Movement;
-    //    _movementAction.Enable();
-
-    //    _playerControl.Player.Jump.performed += OnJump;
-    //    _playerControl.Player.Jump.Enable();
-
-    //    _playerControl.Player.Grab.Enable();
-    //}
-
-    //private void OnDisable() {
-    //    _playerControl.Player.Movement.Disable();
-    //    _playerControl.Player.Jump.Disable();
-    //    _playerControl.Player.Grab.Disable();
-    //}
-
-    private void Update() {
-
-        Movement();
-
-        if(_isGirl) {
-            _girlModel.SetActive(true);
-            _boyModel.SetActive(false);
-            _capsuleCollider.radius = _girlSize.x / 2f;
-            _capsuleCollider.height = _girlSize.y;
-
-            _isGirl = false;
-        }
-        else if(_isBoy) {
-            _boyModel.SetActive(true);
-            _girlModel.SetActive(false);
-            _capsuleCollider.radius = _boySize.x / 2f;
-            _capsuleCollider.height = _boySize.y;
-
-            _isBoy = false;
+        if (_rigidbody == null || _capsuleCollider == null)
+        {
+            Debug.LogError("Player requires both a Rigidbody and a CapsuleCollider.");
         }
     }
 
-    private void Movement() {
-        Vector2 movement = _movementAction.ReadValue<Vector2>();
-        if(movement != Vector2.zero)
-            movement = movement / movement.magnitude * Mathf.Clamp(movement.magnitude, 0f, 1f);
+    private void Update()
+    {
+        CheckGrounded();
+        HandleMovement();
+        ApplyGravity();
+    }
 
-        movement = Vector2.Lerp(_previousMovementInputValue, movement, 0.08f);
-        _previousMovementInputValue = movement;
+    private void CheckGrounded()
+    {
+        if (_capsuleCollider == null) return;
 
-        Vector3 playerMovement = new Vector3(movement.x, 0, movement.y) * _speed;
+        // Define the radius of the sphere based on the capsule collider's radius
+        float sphereRadius = _capsuleCollider.radius * 0.9f; // Slightly smaller than the collider radius
+        Vector3 sphereCenter = transform.position + Vector3.down * (_capsuleCollider.bounds.extents.y - sphereRadius);
 
-        _rigidbody.velocity =
-            new Vector3(
-                Mathf.Lerp(_rigidbody.velocity.x, playerMovement.x, 0.3f),
-                _rigidbody.velocity.y,
-                Mathf.Lerp(_rigidbody.velocity.z, playerMovement.z, 0.3f));
+        // Perform a sphere cast just below the player to check for ground contact
+        _isGrounded = Physics.CheckSphere(sphereCenter, sphereRadius, LayerMask.GetMask("Default"), QueryTriggerInteraction.Ignore);
 
-        if(_doJump) {
-            _rigidbody.velocity += Vector3.up * Mathf.Sqrt(2 * -Physics.gravity.y * (_jumpHeight));
-            _doJump = false;
+        Debug.Log("IsGrounded: " + _isGrounded);
+    }
+
+    private void HandleMovement()
+    {
+        Vector2 movementInput = _movementAction.ReadValue<Vector2>();
+        float speed = (_isRunning ? runSpeed : walkSpeed) * movementInput.magnitude;
+
+        Vector3 movementDirection = new Vector3(movementInput.x, 0, movementInput.y).normalized;
+        Vector3 targetHorizontalVelocity = Vector3.Lerp(new Vector3(_rigidbody.velocity.x, 0, _rigidbody.velocity.z),
+                                                        movementDirection * speed,
+                                                        (_isGrounded ? acceleration : deceleration) * Time.deltaTime);
+
+        _rigidbody.velocity = new Vector3(targetHorizontalVelocity.x, _rigidbody.velocity.y, targetHorizontalVelocity.z);
+
+        if (_isPushPulling && _currentPushableObject != null)
+        {
+            _currentPushableObject.StartPushPull(movementDirection);
         }
     }
 
-    private void OnJump(InputAction.CallbackContext context) {
-        _doJump = true;
+    private void ApplyGravity()
+    {
+        if (_rigidbody.velocity.y < 0)
+        {
+            _rigidbody.velocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+        }
+        else
+        {
+            _rigidbody.velocity += Vector3.up * Physics.gravity.y * (gravityScale - 1) * Time.deltaTime;
+        }
     }
 
-    private void OnGrab(InputAction.CallbackContext context) {
+    private void Jump()
+    {
+        if (_isGrounded)
+        {
+            _rigidbody.velocity = new Vector3(_rigidbody.velocity.x, Mathf.Sqrt(2 * -Physics.gravity.y * jumpHeight), _rigidbody.velocity.z);
+            Debug.Log("Player Jumped");
+        }
+    }
 
+    private void OnJump(InputAction.CallbackContext context)
+    {
+        Jump();
+    }
+
+    private void TogglePushPullMode()
+    {
+        if (_currentPushableObject != null)
+        {
+            _isPushPulling = !_isPushPulling;
+            if (_isPushPulling)
+            {
+                Debug.Log("Started pushing/pulling.");
+            }
+            else
+            {
+                _currentPushableObject.StopPushPull();
+                Debug.Log("Stopped pushing/pulling.");
+            }
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (((1 << other.gameObject.layer) & pushableLayer) != 0)
+        {
+            _currentPushableObject = other.GetComponent<PushableObject>();
+            Debug.Log("Entered pushable object zone.");
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (_currentPushableObject != null && other.GetComponent<PushableObject>() == _currentPushableObject)
+        {
+            if (_isPushPulling)
+            {
+                _currentPushableObject.StopPushPull();
+            }
+            _currentPushableObject = null;
+            _isPushPulling = false;
+            Debug.Log("Exited pushable object zone.");
+        }
     }
 }
