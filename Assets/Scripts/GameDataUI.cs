@@ -32,8 +32,8 @@ public class GameDataUI : MonoBehaviour
         if (playerController == null || playerRigidbody == null) return;
 
         // Update each UI element with the current data
-        groundedStatusText.text = "Grounded: " + playerController.IsGrounded;
+        //groundedStatusText.text = "Grounded: " + playerController.IsGrounded;
         velocityText.text = "Velocity: " + playerRigidbody.velocity.ToString("F2");
-        pushPullStatusText.text = "Push/Pull Mode: " + (playerController.IsPushPulling ? "Active" : "Inactive");
+        //pushPullStatusText.text = "Push/Pull Mode: " + (playerController.IsPushPulling ? "Active" : "Inactive");
     }
 }
