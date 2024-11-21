@@ -153,9 +153,14 @@ public class CustomDefaultNetworkManager : NetworkManager {
         if(!_connections.Any(x => x.connectionId == conn.connectionId))
             _connections.Add(conn);
 
-        if(_connections.Count == maxConnections)
-            SteamGameManager._instance.SpawnPlayers();
-            //GameManager._instance.SpawnPlayers();
+        if(_connections.Count == maxConnections) {
+            if(GameManager._instance != null) {
+                GameManager._instance.SpawnPlayers();
+            }
+            else if(SteamGameManager._instance != null) {
+                SteamGameManager._instance.SpawnPlayers();
+            }
+        }
     }
     
     public void SpawnPlayers() {
@@ -172,8 +177,13 @@ public class CustomDefaultNetworkManager : NetworkManager {
         }
 
         Debug.Log("Spawning Player Successful");
-        SteamGameManager._instance.OnPlayerSpawned();
-        //GameManager._instance.OnPlayerSpawned();
+
+        if(GameManager._instance != null) {
+            GameManager._instance.OnPlayerSpawned();
+        }
+        else if(SteamGameManager._instance != null) {
+            SteamGameManager._instance.OnPlayerSpawned();
+        }
     }
 
     /// <summary>

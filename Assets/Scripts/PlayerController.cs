@@ -1,4 +1,5 @@
 using Mirror;
+using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.BC;
 using System;
 using System.Collections;
@@ -22,7 +23,6 @@ public class PlayerController : NetworkBehaviour {
     [Header("Boy Body Params")]
     [SerializeField] private GameObject _boyModel;
     [SerializeField] private Vector3 _boySize;
-    
 
     [Header("Parameters")]
     [SerializeField] float _speed = 1;
@@ -35,6 +35,7 @@ public class PlayerController : NetworkBehaviour {
     bool _isReady = false;
     float _loadingTime = 0.2f;
     float _timeWhenLoadingStart = 0f;
+
     private void Start() {
         DontDestroyOnLoad(gameObject);
         _rigidbody = GetComponent<Rigidbody>();
@@ -99,6 +100,9 @@ public class PlayerController : NetworkBehaviour {
 
     private void Movement() {
         Vector2 movement = _movementAction.ReadValue<Vector2>();
+        if(movement.sqrMagnitude > 1f)
+            movement.Normalize();
+
         if(movement != Vector2.zero)
             movement = movement / movement.magnitude * Mathf.Clamp(movement.magnitude, 0f, 1f);
 
