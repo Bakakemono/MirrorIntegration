@@ -1,5 +1,8 @@
+using JetBrains.Annotations;
 using UnityEngine;
 
+// Force the object to have a Rigidbody
+[RequireComponent(typeof(Rigidbody))]
 public class PushableObject : MonoBehaviour
 {
     [Header("Pushable Object Settings")]
@@ -8,24 +11,32 @@ public class PushableObject : MonoBehaviour
     private bool _isBeingPushed = false;
     private Vector3 _pushDirection;
 
+    [SerializeField, Range(0.1f, 10f)] float _pushSpeed = 1.0f;
+    [SerializeField, Range(0.1f, 10f)] float _pullSpeed = 1.0f;
+    private Rigidbody _playerPushingRigidBody;
+
     private void Awake()
     {
-        // Ensure there is a Rigidbody
         _rigidbody = GetComponent<Rigidbody>();
-        if (_rigidbody == null)
-        {
-            Debug.LogError("PushableObject requires a Rigidbody component.");
-        }
     }
 
     private void FixedUpdate()
     {
-        if (_isBeingPushed)
-        {
-            // Apply force continuously in the push direction
-            _rigidbody.AddForce(_pushDirection * pushForce, ForceMode.Acceleration);
-            Debug.Log("Applying push force in direction: " + _pushDirection);
-        }
+        //if (_isBeingPushed)
+        //{
+        //    // Apply force continuously in the push direction
+        //    _rigidbody.AddForce(_pushDirection * pushForce, ForceMode.Acceleration);
+        //    Debug.Log("Applying push force in direction: " + _pushDirection);
+        //}
+        if(_playerPushingRigidBody == null)
+            return;
+
+        _rigidbody.velocity =
+            new Vector3(
+                _playerPushingRigidBody.velocity.x,
+                0f,
+                _playerPushingRigidBody.velocity.z
+                );
     }
 
     /// <summary>
@@ -47,5 +58,11 @@ public class PushableObject : MonoBehaviour
         _isBeingPushed = false;
         _rigidbody.velocity = Vector3.zero; // Stop the object when push/pull is deactivated
         Debug.Log("Stopped pushing/pulling.");
+
+        _playerPushingRigidBody = null;
+    }
+
+    public void StartPushPull(GameObject _pushingPlayer) {
+        _playerPushingRigidBody = _pushingPlayer.GetComponent<Rigidbody>();
     }
 }
