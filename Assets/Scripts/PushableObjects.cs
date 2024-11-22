@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 // Force the object to have a Rigidbody
@@ -64,5 +65,14 @@ public class PushableObject : MonoBehaviour
 
     public void StartPushPull(GameObject _pushingPlayer) {
         _playerPushingRigidBody = _pushingPlayer.GetComponent<Rigidbody>();
+
+    }
+
+    public float GetPullingSpeed() {
+        return _pullSpeed;
+    }
+
+    public float GetPushingSpeed() {
+        return _pushSpeed;
     }
 }

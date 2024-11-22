@@ -77,6 +77,7 @@ public class PlayerController : NetworkBehaviour {
     [SerializeField] Transform _grabBoxDetectionPostion;
     [SerializeField] Vector3 _grabBoxDetectionDimension;
     Vector3 _pusingDirection = Vector3.zero;
+    PushableObject _currentPushedObject;
     bool _isPushing = false;
     float _pushingSpeed = 0f;
     float _pullingSpeed = 0f;
@@ -93,6 +94,8 @@ public class PlayerController : NetworkBehaviour {
 
     // LayerMask for ground detection
     [SerializeField] LayerMask _groundLayer;
+
+    [SerializeField] LayerMask _pushableObjectLayer;
 
     private Vector3 _spawnPosition;
 
@@ -270,14 +273,13 @@ public class PlayerController : NetworkBehaviour {
             _currentSpeed = Mathf.Min(_currentSpeed, maxAllowedSpeed);
         }
 
-        Vector3 inputDirection = new Vector3(movementInput.x, 0, movementInput.y).normalized;
-        Vector3 playerMovement = inputDirection * _currentSpeed;
+        movementInput = movementInput.normalized * _currentSpeed;
 
         // Apply horizontal movement
         _rigidbody.velocity = new Vector3(
-            playerMovement.x,
+            movementInput.x,
             _rigidbody.velocity.y,
-            playerMovement.z
+            movementInput.y
         );
 
         // Handle jumping
@@ -389,10 +391,25 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void OnGrab(InputAction.CallbackContext context) {
-       if(_isPushing)
+        if(_isPushing) {
             _isPushing = false;
+            _currentPushedObject.StopPushPull();
+        }
         else {
-            Physics.OverlapBox(_grabBoxDetectionPostion.position, _grabBoxDetectionDimension / 2f);
+            Collider[] _detectedObjects =
+                Physics.OverlapBox(
+                    _grabBoxDetectionPostion.position,
+                    _grabBoxDetectionDimension / 2f,
+                    transform.rotation,
+                    _pushableObjectLayer
+                    );
+
+            if(_detectedObjects.Length > 0) {
+                _currentPushedObject = _detectedObjects[0].GetComponent<PushableObject>();
+                _currentPushedObject.StartPushPull(gameObject);
+                _pushingSpeed = _currentPushedObject.GetPushingSpeed();
+                _pullingSpeed = _currentPushedObject.GetPullingSpeed();
+            }
         }
     }
 

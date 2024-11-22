@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &81089469411526220
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1887060153225876507}
+  m_Layer: 0
+  m_Name: DetectionBox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1887060153225876507
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 81089469411526220}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 686041310504468018}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5664766123174912424
 GameObject:
   m_ObjectHideFlags: 0
@@ -38,6 +69,7 @@ Transform:
   - {fileID: 6167485950547064502}
   - {fileID: 4083823526572912286}
   - {fileID: 8332342290811795833}
+  - {fileID: 1887060153225876507}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4698119956060644890
@@ -57,13 +89,43 @@ MonoBehaviour:
   syncInterval: 0
   _connectionID: 0
   _playerIdNumber: 0
+  _loadingTime: 0.2
   _girlModel: {fileID: 5133196223342230455}
   _girlSize: {x: 0.6, y: 1.5, z: 0.6}
   _boyModel: {fileID: 4021945794750958968}
   _boySize: {x: 1, y: 1, z: 1}
-  _speed: 3
+  _walkSpeed: 2
+  _runSpeed: 5
+  _accelerationTime: 0.2
+  _decelerationTime: 0.2
+  _airWalkSpeed: 2
+  _airRunSpeed: 5
+  _airAccelerationTime: 0.2
+  _airDecelerationTime: 0.2
   _jumpHeight: 1
+  _timeToJumpApex: 0.5
+  _desiredJumpLength: 5
+  _upwardMovementMultiplier: 1
+  _downwardMovementMultiplier: 6.17
+  _jumpCutOff: 2
+  _fallSpeedLimit: 20
+  _maxAirJumps: 0
+  _enableCoyoteTime: 1
+  _enableJumpBuffer: 1
+  _coyoteTimeDuration: 0.15
+  _jumpBufferDuration: 0.15
+  _grabBoxDetectionPostion: {fileID: 1887060153225876507}
+  _grabBoxDetectionDimension: {x: 0.3, y: 0.3, z: 0.2}
+  _gravityScale: 1
   _cameraPosition: {fileID: 6167485950547064502}
+  _isBoy: 0
+  _isGirl: 0
+  _groundLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  _pushableObjectLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!114 &6616196066788443688
 MonoBehaviour:
   m_ObjectHideFlags: 0
