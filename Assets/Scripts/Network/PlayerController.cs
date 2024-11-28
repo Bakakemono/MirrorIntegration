@@ -102,6 +102,8 @@ public class PlayerController : NetworkBehaviour {
 
     private bool _isRunning = false; // Variable to track running state
 
+    Vector3 _movementInput = Vector3.zero;
+
     private void Start() {
         DontDestroyOnLoad(gameObject);
         _rigidbody = GetComponent<Rigidbody>();
@@ -130,28 +132,28 @@ public class PlayerController : NetworkBehaviour {
             _respawnAction = _playerControl.Player.Respawn;
             _respawnAction.performed += OnRespawn;
             _respawnAction.Enable();
-
-            // Calculate gravity and jump velocity
-            _gravity = (-2f * _jumpHeight) / (_timeToJumpApex * _timeToJumpApex);
-            _jumpVelocity = Mathf.Abs(_gravity) * _timeToJumpApex;
-
-            // Calculate total time in air
-            float totalJumpTime = 2f * _timeToJumpApex;
-
-            // Calculate required horizontal speed
-            float requiredHorizontalSpeed = _desiredJumpLength / totalJumpTime;
-
-            // Set air movement speeds
-            _airWalkSpeed = requiredHorizontalSpeed;
-            _airRunSpeed = requiredHorizontalSpeed;
-
-            // Disable default gravity
-            _rigidbody.useGravity = false;
-
-            // Set initial spawn position
-            _spawnPosition = transform.position;
         }
         _timeWhenLoadingStart += Time.time;
+
+        // Calculate gravity and jump velocity
+        _gravity = (-2f * _jumpHeight) / (_timeToJumpApex * _timeToJumpApex);
+        _jumpVelocity = Mathf.Abs(_gravity) * _timeToJumpApex;
+
+        // Calculate total time in air
+        float totalJumpTime = 2f * _timeToJumpApex;
+
+        // Calculate required horizontal speed
+        float requiredHorizontalSpeed = _desiredJumpLength / totalJumpTime;
+
+        // Set air movement speeds
+        _airWalkSpeed = requiredHorizontalSpeed;
+        _airRunSpeed = requiredHorizontalSpeed;
+
+        // Disable default gravity
+        _rigidbody.useGravity = false;
+
+        // Set initial spawn position
+        _spawnPosition = transform.position;
     }
 
     //private void OnEnable() {
@@ -183,18 +185,21 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void Update() {
-        if(!isLocalPlayer)
-            return;
+        if(isLocalPlayer) {
+            if(!_playerBodySelected && _timeWhenLoadingStart + _loadingTime < Time.time) {
+                CMD_ChooseModel(isServer);
+            }
 
-        if(!_playerBodySelected && _timeWhenLoadingStart + _loadingTime < Time.time) {
-            CMD_ChooseModel(isServer);
+            CMD_SendCurrentMovement(_movementAction.ReadValue<Vector2>());
+            return;
         }
 
-        GroundCheck();
 
-        HandleInput();
+        //GroundCheck();
 
-        HandleTimers();
+        //HandleInput();
+
+        //HandleTimers();
 
         Movement();
     }
@@ -238,7 +243,7 @@ public class PlayerController : NetworkBehaviour {
             return;
         }
 
-        Vector2 movementInput = _movementAction.ReadValue<Vector2>();
+        Vector2 movementInput = _movementInput;
 
         _lastMoveDirection = movementInput != Vector2.zero ? movementInput.normalized : _lastMoveDirection;
 
@@ -360,7 +365,7 @@ public class PlayerController : NetworkBehaviour {
                 _isJumping = false;
 
                 // Reset _currentSpeed to ground target speed
-                Vector2 movementInput = _movementAction.ReadValue<Vector2>();
+                Vector2 movementInput = _movementInput;
                 float movementMagnitude = movementInput.magnitude;
                 float targetGroundSpeed = (_isRunning ? _runSpeed : _walkSpeed) * movementMagnitude;
 
@@ -456,7 +461,7 @@ public class PlayerController : NetworkBehaviour {
 
                 transform.rotation = Quaternion.LookRotation(_pushingDirection);
                 _isPushing = true;
-            }
+            } 
         }
     }
 
@@ -494,5 +499,16 @@ public class PlayerController : NetworkBehaviour {
             capsuleCollider.height = _boySize.y;
         }
         _playerBodySelected = true;
+    }
+
+    // Client Side Only
+
+
+
+    // Server Side Only
+    [Command]
+    void CMD_SendCurrentMovement(Vector3 movementInput) {
+        _movementInput = movementInput;
+        Debug.Log("move : " + movementInput);
     }
 }
