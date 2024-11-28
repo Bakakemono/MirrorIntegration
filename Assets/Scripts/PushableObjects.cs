@@ -14,11 +14,13 @@ public class PushableObject : MonoBehaviour
 
     [SerializeField, Range(0.1f, 10f)] float _pushSpeed = 1.0f;
     [SerializeField, Range(0.1f, 10f)] float _pullSpeed = 1.0f;
-    private Rigidbody _playerPushingRigidBody;
+    Transform _playerTransform;
+    Vector3 _relativePosPlayer;
 
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
+        _pushDirection = transform.forward;
     }
 
     private void FixedUpdate()
@@ -29,15 +31,14 @@ public class PushableObject : MonoBehaviour
         //    _rigidbody.AddForce(_pushDirection * pushForce, ForceMode.Acceleration);
         //    Debug.Log("Applying push force in direction: " + _pushDirection);
         //}
-        if(_playerPushingRigidBody == null)
+    }
+
+    private void Update() {
+        if(_playerTransform == null)
             return;
 
-        _rigidbody.velocity =
-            new Vector3(
-                _playerPushingRigidBody.velocity.x,
-                0f,
-                _playerPushingRigidBody.velocity.z
-                );
+        Vector3 newPos = _relativePosPlayer + _playerTransform.position;
+        transform.position = new Vector3(newPos.x, transform.position.y, newPos.z);
     }
 
     /// <summary>
@@ -60,12 +61,14 @@ public class PushableObject : MonoBehaviour
         _rigidbody.velocity = Vector3.zero; // Stop the object when push/pull is deactivated
         Debug.Log("Stopped pushing/pulling.");
 
-        _playerPushingRigidBody = null;
+        _playerTransform = null;
+        _rigidbody.mass = 100f;
     }
 
     public void StartPushPull(GameObject _pushingPlayer) {
-        _playerPushingRigidBody = _pushingPlayer.GetComponent<Rigidbody>();
-
+        _playerTransform = _pushingPlayer.transform;
+        _relativePosPlayer = transform.position - _playerTransform.position;
+        _rigidbody.mass = 1.0f;
     }
 
     public float GetPullingSpeed() {
@@ -74,5 +77,9 @@ public class PushableObject : MonoBehaviour
 
     public float GetPushingSpeed() {
         return _pushSpeed;
+    }
+
+    public Vector3 GetPushDirection() {
+        return _pushDirection;
     }
 }

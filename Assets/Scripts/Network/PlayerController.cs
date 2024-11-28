@@ -39,6 +39,7 @@ public class PlayerController : NetworkBehaviour {
     [SerializeField] float _runSpeed = 5f;
     [SerializeField] float _accelerationTime = 0.2f;
     [SerializeField] float _decelerationTime = 0.2f;
+    Vector2 _lastMoveDirection = Vector3.zero;
 
     [Header("Air Movement Parameters")]
     [SerializeField] float _airWalkSpeed = 2f;
@@ -76,7 +77,7 @@ public class PlayerController : NetworkBehaviour {
     [Header("Grab Params")]
     [SerializeField] Transform _grabBoxDetectionPostion;
     [SerializeField] Vector3 _grabBoxDetectionDimension;
-    Vector3 _pusingDirection = Vector3.zero;
+    Vector3 _pushingDirection = Vector3.zero;
     PushableObject _currentPushedObject;
     bool _isPushing = false;
     float _pushingSpeed = 0f;
@@ -106,10 +107,8 @@ public class PlayerController : NetworkBehaviour {
         _rigidbody = GetComponent<Rigidbody>();
         _capsuleCollider = GetComponent<CapsuleCollider>();
         if(isLocalPlayer) {
-            Transform cameraTransform = Camera.main.transform;
-            cameraTransform.position = _cameraPosition.position;
-            cameraTransform.rotation = _cameraPosition.rotation;
-            cameraTransform.parent = transform;
+
+            CameraBehavior._instance.SetPlayer(transform);
 
             _playerControl = new PlayerControl();
             _movementAction = _playerControl.Player.Movement;
@@ -234,7 +233,21 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void Movement() {
+        if(_isPushing) {
+            WhilePushing();
+            return;
+        }
+
         Vector2 movementInput = _movementAction.ReadValue<Vector2>();
+
+        _lastMoveDirection = movementInput != Vector2.zero ? movementInput.normalized : _lastMoveDirection;
+
+        transform.rotation =
+            Quaternion.Lerp(
+                transform.rotation,
+                Quaternion.LookRotation(new Vector3(_lastMoveDirection.x, 0f, _lastMoveDirection.y), Vector3.up),
+                Time.deltaTime * 10f
+                );
 
         // Determine target speed and acceleration based on grounded state
         float targetSpeed;
@@ -362,7 +375,9 @@ public class PlayerController : NetworkBehaviour {
     }
 
     void GrabCheck() {
+        Vector2 movementInput = _movementAction.ReadValue<Vector2>();
 
+        _rigidbody.velocity = movementInput.normalized;
     }
 
     private void OnRunPerformed(InputAction.CallbackContext context) {
@@ -381,6 +396,11 @@ public class PlayerController : NetworkBehaviour {
             Vector3 origin = transform.position + Vector3.up * (_capsuleCollider.height / 2 - _capsuleCollider.radius);
             float maxDistance = (_capsuleCollider.height / 2 - _capsuleCollider.radius) + 0.1f;
             Gizmos.DrawWireSphere(origin + Vector3.down * maxDistance, radius);
+        }
+        if(_grabBoxDetectionPostion != null) {
+            Gizmos.matrix = _grabBoxDetectionPostion.localToWorldMatrix;
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireCube(Vector3.zero, _grabBoxDetectionDimension);
         }
     }
 
@@ -409,8 +429,50 @@ public class PlayerController : NetworkBehaviour {
                 _currentPushedObject.StartPushPull(gameObject);
                 _pushingSpeed = _currentPushedObject.GetPushingSpeed();
                 _pullingSpeed = _currentPushedObject.GetPullingSpeed();
+
+
+                Vector3 localPos = _currentPushedObject.transform.InverseTransformPoint(transform.position);
+
+                if(MathF.Abs(localPos.x) > Mathf.Abs(localPos.z)) {
+
+                    Vector3 pushingDirection = _currentPushedObject.GetPushDirection();
+
+                    if(localPos.x < 0) {
+                        _pushingDirection = new Vector3(pushingDirection.z, 0f, -pushingDirection.x);
+                    }
+                    else {
+                        _pushingDirection = new Vector3(-pushingDirection.z, 0f, pushingDirection.x);
+                    }
+                }
+                else {
+                    if(localPos.z < 0) {
+                        _pushingDirection = _currentPushedObject.GetPushDirection();
+                    }
+                    else {
+                        _pushingDirection = _currentPushedObject.GetPushDirection() * -1f;
+
+                    }
+                }
+
+                transform.rotation = Quaternion.LookRotation(_pushingDirection);
+                _isPushing = true;
             }
         }
+    }
+
+    void WhilePushing() {
+        Vector2 movementInput = _movementAction.ReadValue<Vector2>();
+        Vector3 convertedMovenentInput = new Vector3(movementInput.x, 0f, movementInput.y).normalized;
+
+        Vector3 projectedDirection = Vector3.Project(convertedMovenentInput, _pushingDirection).normalized;
+
+        if(projectedDirection == _pushingDirection) {
+            _rigidbody.velocity = projectedDirection * _pushingSpeed + Vector3.up * _rigidbody.velocity.y;
+        }
+        else {
+            _rigidbody.velocity = projectedDirection * _pullingSpeed + Vector3.up * _rigidbody.velocity.y;
+        }
+        
     }
 
     [Command]
