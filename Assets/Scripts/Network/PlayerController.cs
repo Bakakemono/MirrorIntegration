@@ -21,7 +21,7 @@ public class PlayerController : NetworkBehaviour {
     Vector2 _previousMovementInputValue = Vector2.zero;
 
     [Header("Connection Params")]
-    [SerializeField]float _loadingTime = 0.2f;
+    [SerializeField] float _loadingTime = 0.2f;
     float _timeWhenLoadingStart = 0f;
     bool _playerBodySelected = false;
     bool _isReady = false;
@@ -102,8 +102,6 @@ public class PlayerController : NetworkBehaviour {
 
     private bool _isRunning = false; // Variable to track running state
 
-    Vector3 _movementInput = Vector3.zero;
-
     private void Start() {
         DontDestroyOnLoad(gameObject);
         _rigidbody = GetComponent<Rigidbody>();
@@ -132,28 +130,28 @@ public class PlayerController : NetworkBehaviour {
             _respawnAction = _playerControl.Player.Respawn;
             _respawnAction.performed += OnRespawn;
             _respawnAction.Enable();
+
+            // Calculate gravity and jump velocity
+            _gravity = (-2f * _jumpHeight) / (_timeToJumpApex * _timeToJumpApex);
+            _jumpVelocity = Mathf.Abs(_gravity) * _timeToJumpApex;
+
+            // Calculate total time in air
+            float totalJumpTime = 2f * _timeToJumpApex;
+
+            // Calculate required horizontal speed
+            float requiredHorizontalSpeed = _desiredJumpLength / totalJumpTime;
+
+            // Set air movement speeds
+            _airWalkSpeed = requiredHorizontalSpeed;
+            _airRunSpeed = requiredHorizontalSpeed;
+
+            // Disable default gravity
+            _rigidbody.useGravity = false;
+
+            // Set initial spawn position
+            _spawnPosition = transform.position;
         }
         _timeWhenLoadingStart += Time.time;
-
-        // Calculate gravity and jump velocity
-        _gravity = (-2f * _jumpHeight) / (_timeToJumpApex * _timeToJumpApex);
-        _jumpVelocity = Mathf.Abs(_gravity) * _timeToJumpApex;
-
-        // Calculate total time in air
-        float totalJumpTime = 2f * _timeToJumpApex;
-
-        // Calculate required horizontal speed
-        float requiredHorizontalSpeed = _desiredJumpLength / totalJumpTime;
-
-        // Set air movement speeds
-        _airWalkSpeed = requiredHorizontalSpeed;
-        _airRunSpeed = requiredHorizontalSpeed;
-
-        // Disable default gravity
-        _rigidbody.useGravity = false;
-
-        // Set initial spawn position
-        _spawnPosition = transform.position;
     }
 
     //private void OnEnable() {
@@ -185,21 +183,18 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void Update() {
-        if(isLocalPlayer) {
-            if(!_playerBodySelected && _timeWhenLoadingStart + _loadingTime < Time.time) {
-                CMD_ChooseModel(isServer);
-            }
-
-            CMD_SendCurrentMovement(_movementAction.ReadValue<Vector2>());
+        if(!isLocalPlayer)
             return;
+
+        if(!_playerBodySelected && _timeWhenLoadingStart + _loadingTime < Time.time) {
+            CMD_ChooseModel(isServer);
         }
 
+        GroundCheck();
 
-        //GroundCheck();
+        HandleInput();
 
-        //HandleInput();
-
-        //HandleTimers();
+        HandleTimers();
 
         Movement();
     }
@@ -243,7 +238,7 @@ public class PlayerController : NetworkBehaviour {
             return;
         }
 
-        Vector2 movementInput = _movementInput;
+        Vector2 movementInput = _movementAction.ReadValue<Vector2>();
 
         _lastMoveDirection = movementInput != Vector2.zero ? movementInput.normalized : _lastMoveDirection;
 
@@ -365,7 +360,7 @@ public class PlayerController : NetworkBehaviour {
                 _isJumping = false;
 
                 // Reset _currentSpeed to ground target speed
-                Vector2 movementInput = _movementInput;
+                Vector2 movementInput = _movementAction.ReadValue<Vector2>();
                 float movementMagnitude = movementInput.magnitude;
                 float targetGroundSpeed = (_isRunning ? _runSpeed : _walkSpeed) * movementMagnitude;
 
@@ -416,9 +411,19 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void OnGrab(InputAction.CallbackContext context) {
+        if(!isServer)
+            CMD_Grab();
+
+        Grab();
+    }
+    
+    void Grab() {
         if(_isPushing) {
             _isPushing = false;
             _currentPushedObject.StopPushPull();
+
+            if(isServer && !isLocalPlayer)
+                RPC_StopPushing();
         }
         else {
             Collider[] _detectedObjects =
@@ -461,12 +466,16 @@ public class PlayerController : NetworkBehaviour {
 
                 transform.rotation = Quaternion.LookRotation(_pushingDirection);
                 _isPushing = true;
-            } 
+
+                if(isServer && !isLocalPlayer)
+                    RPC_StartPushing(_pushingDirection, _currentPushedObject.GetPushingSpeed(), _currentPushedObject.GetPullingSpeed());
+            }
         }
     }
 
     void WhilePushing() {
         Vector2 movementInput = _movementAction.ReadValue<Vector2>();
+
         Vector3 convertedMovenentInput = new Vector3(movementInput.x, 0f, movementInput.y).normalized;
 
         Vector3 projectedDirection = Vector3.Project(convertedMovenentInput, _pushingDirection).normalized;
@@ -477,7 +486,6 @@ public class PlayerController : NetworkBehaviour {
         else {
             _rigidbody.velocity = projectedDirection * _pullingSpeed + Vector3.up * _rigidbody.velocity.y;
         }
-        
     }
 
     [Command]
@@ -501,14 +509,28 @@ public class PlayerController : NetworkBehaviour {
         _playerBodySelected = true;
     }
 
-    // Client Side Only
-
-
-
-    // Server Side Only
     [Command]
-    void CMD_SendCurrentMovement(Vector3 movementInput) {
-        _movementInput = movementInput;
-        Debug.Log("move : " + movementInput);
+    void CMD_Grab() {
+        Grab();
+    }
+
+    [ClientRpc]
+    void RPC_StartPushing(Vector3 pushingDirection, float pushSpeed, float pullSpeed) {
+        if(isServer)
+            return;
+
+        _pushingSpeed = pushSpeed;
+        _pullingSpeed = pullSpeed;
+        _pushingDirection = pushingDirection;
+        _isPushing = true;
+    }
+
+    [ClientRpc]
+    void RPC_StopPushing() {
+        if(isServer)
+            return;
+
+        Debug.Log("Client Stop Pushing");
+        _isPushing = false;
     }
 }
