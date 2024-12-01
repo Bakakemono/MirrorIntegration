@@ -129,6 +129,7 @@ GameObject:
   - component: {fileID: 8537391572551464373}
   - component: {fileID: -4043633276491813175}
   - component: {fileID: 5926712594808598385}
+  - component: {fileID: 7427894174680793889}
   m_Layer: 0
   m_Name: DefaultPlayer
   m_TagString: Untagged
@@ -345,6 +346,23 @@ MonoBehaviour:
   rotationSensitivity: 0.01
   positionPrecision: 0.01
   scalePrecision: 0.01
+--- !u!114 &7427894174680793889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5664766123174912424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfec426d256e0f94fad54f1a0693ab77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _grabBoxDetectionPostion: {fileID: 1887060153225876507}
+  _grabBoxDetectionDimension: {x: 0.3, y: 0.3, z: 0.2}
+  _pushableObjectLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &6074182517568559441
 GameObject:
   m_ObjectHideFlags: 0

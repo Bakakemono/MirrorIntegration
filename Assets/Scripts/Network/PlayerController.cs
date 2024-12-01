@@ -79,7 +79,6 @@ public class PlayerController : NetworkBehaviour {
     [SerializeField] Vector3 _grabBoxDetectionDimension;
     Vector3 _pushingDirection = Vector3.zero;
     PushableObject _currentPushedObject;
-    bool _isPushing = false;
     float _pushingSpeed = 0f;
     float _pullingSpeed = 0f;
 
@@ -102,10 +101,17 @@ public class PlayerController : NetworkBehaviour {
 
     private bool _isRunning = false; // Variable to track running state
 
+    PushingBehavior _pushingBehavior;
+    bool _isPushing = false;
+
     private void Start() {
         DontDestroyOnLoad(gameObject);
         _rigidbody = GetComponent<Rigidbody>();
         _capsuleCollider = GetComponent<CapsuleCollider>();
+
+        _pushingBehavior = GetComponent<PushingBehavior>();
+        _pushingBehavior._onReleasing += OnGrabForceRelease;
+
         if(isLocalPlayer) {
 
             CameraBehavior._instance.SetPlayer(transform);
@@ -190,6 +196,11 @@ public class PlayerController : NetworkBehaviour {
             CMD_ChooseModel(isServer);
         }
 
+        if(_isPushing) {
+            _pushingBehavior.WhilePushing(_movementAction.ReadValue<Vector2>());
+            return;
+        }
+
         GroundCheck();
 
         HandleInput();
@@ -233,11 +244,6 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void Movement() {
-        if(_isPushing) {
-            WhilePushing();
-            return;
-        }
-
         Vector2 movementInput = _movementAction.ReadValue<Vector2>();
 
         _lastMoveDirection = movementInput != Vector2.zero ? movementInput.normalized : _lastMoveDirection;
@@ -411,81 +417,13 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void OnGrab(InputAction.CallbackContext context) {
+        _isPushing =_pushingBehavior.Grab();
         if(!isServer)
             CMD_Grab();
-
-        Grab();
-    }
-    
-    void Grab() {
-        if(_isPushing) {
-            _isPushing = false;
-            _currentPushedObject.StopPushPull();
-
-            if(isServer && !isLocalPlayer)
-                RPC_StopPushing();
-        }
-        else {
-            Collider[] _detectedObjects =
-                Physics.OverlapBox(
-                    _grabBoxDetectionPostion.position,
-                    _grabBoxDetectionDimension / 2f,
-                    transform.rotation,
-                    _pushableObjectLayer
-                    );
-
-            if(_detectedObjects.Length > 0) {
-                _currentPushedObject = _detectedObjects[0].GetComponent<PushableObject>();
-                _currentPushedObject.StartPushPull(gameObject);
-                _pushingSpeed = _currentPushedObject.GetPushingSpeed();
-                _pullingSpeed = _currentPushedObject.GetPullingSpeed();
-
-
-                Vector3 localPos = _currentPushedObject.transform.InverseTransformPoint(transform.position);
-
-                if(MathF.Abs(localPos.x) > Mathf.Abs(localPos.z)) {
-
-                    Vector3 pushingDirection = _currentPushedObject.GetPushDirection();
-
-                    if(localPos.x < 0) {
-                        _pushingDirection = new Vector3(pushingDirection.z, 0f, -pushingDirection.x);
-                    }
-                    else {
-                        _pushingDirection = new Vector3(-pushingDirection.z, 0f, pushingDirection.x);
-                    }
-                }
-                else {
-                    if(localPos.z < 0) {
-                        _pushingDirection = _currentPushedObject.GetPushDirection();
-                    }
-                    else {
-                        _pushingDirection = _currentPushedObject.GetPushDirection() * -1f;
-
-                    }
-                }
-
-                transform.rotation = Quaternion.LookRotation(_pushingDirection);
-                _isPushing = true;
-
-                if(isServer && !isLocalPlayer)
-                    RPC_StartPushing(_pushingDirection, _currentPushedObject.GetPushingSpeed(), _currentPushedObject.GetPullingSpeed());
-            }
-        }
     }
 
-    void WhilePushing() {
-        Vector2 movementInput = _movementAction.ReadValue<Vector2>();
-
-        Vector3 convertedMovenentInput = new Vector3(movementInput.x, 0f, movementInput.y).normalized;
-
-        Vector3 projectedDirection = Vector3.Project(convertedMovenentInput, _pushingDirection).normalized;
-
-        if(projectedDirection == _pushingDirection) {
-            _rigidbody.velocity = projectedDirection * _pushingSpeed + Vector3.up * _rigidbody.velocity.y;
-        }
-        else {
-            _rigidbody.velocity = projectedDirection * _pullingSpeed + Vector3.up * _rigidbody.velocity.y;
-        }
+    void OnGrabForceRelease() {
+        _isPushing = false;
     }
 
     [Command]
@@ -511,26 +449,6 @@ public class PlayerController : NetworkBehaviour {
 
     [Command]
     void CMD_Grab() {
-        Grab();
-    }
-
-    [ClientRpc]
-    void RPC_StartPushing(Vector3 pushingDirection, float pushSpeed, float pullSpeed) {
-        if(isServer)
-            return;
-
-        _pushingSpeed = pushSpeed;
-        _pullingSpeed = pullSpeed;
-        _pushingDirection = pushingDirection;
-        _isPushing = true;
-    }
-
-    [ClientRpc]
-    void RPC_StopPushing() {
-        if(isServer)
-            return;
-
-        Debug.Log("Client Stop Pushing");
-        _isPushing = false;
+        _pushingBehavior.Grab();
     }
 }
