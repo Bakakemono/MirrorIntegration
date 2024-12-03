@@ -121,6 +121,7 @@ public class PlayerController : NetworkBehaviour {
             _movementAction.Enable();
 
             _jumpAction = _playerControl.Player.Jump;
+            _jumpAction.IsInProgress();
             _jumpAction.Enable();
 
             _runAction = _playerControl.Player.Run;
@@ -414,6 +415,10 @@ public class PlayerController : NetworkBehaviour {
         // Respawn the character at the spawn position
         transform.position = _spawnPosition;
         _rigidbody.velocity = Vector3.zero;
+    }
+
+    void Climbing() {
+
     }
 
     private void OnGrab(InputAction.CallbackContext context) {
