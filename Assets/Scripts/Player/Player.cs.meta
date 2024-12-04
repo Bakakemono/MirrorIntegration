@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 09776a158a0631c49a1da367793267fe
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - movementConfigAsset: {fileID: 11400000, guid: 826b1397879ae4d4187c457e41277d2f, type: 2}
+  - jumpConfigAsset: {fileID: 11400000, guid: 0b88c2b15e8863a4ca7cf64f160663c0, type: 2}
+  - characterConfig: {fileID: 11400000, guid: 284ee1d30e652884cb870020b60a119d, type: 2}
+  - cameraPosition: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

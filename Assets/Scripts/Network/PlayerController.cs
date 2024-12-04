@@ -27,12 +27,12 @@ public class PlayerController : NetworkBehaviour {
     bool _isReady = false;
 
     [Header("Girl Body Params")]
-    [SerializeField] private GameObject _girlModel;
+    [SerializeField] private GameObject _GirlModel;
     [SerializeField] private Vector3 _girlSize;
 
     [Header("Boy Body Params")]
-    [SerializeField] private GameObject _boyModel;
-    [SerializeField] private Vector3 _boySize;
+    [SerializeField] private GameObject _BoyModel;
+    [SerializeField] private Vector3 _BoySize;
 
     [Header("Ground Movement Parameters")]
     [SerializeField] float _walkSpeed = 2f;
@@ -440,14 +440,14 @@ public class PlayerController : NetworkBehaviour {
     private void RPC_SwitchModel(bool isGirl) {
         CapsuleCollider capsuleCollider = GetComponent<CapsuleCollider>();
         if(isGirl) {
-            _girlModel.SetActive(true);
+            _GirlModel.SetActive(true);
             capsuleCollider.radius = _girlSize.x / 2f;
             capsuleCollider.height = _girlSize.y;
         }
         else {
-            _boyModel.SetActive(true);
-            capsuleCollider.radius = _boySize.x / 2f;
-            capsuleCollider.height = _boySize.y;
+            _BoyModel.SetActive(true);
+            capsuleCollider.radius = _BoySize.x / 2f;
+            capsuleCollider.height = _BoySize.y;
         }
         _playerBodySelected = true;
     }

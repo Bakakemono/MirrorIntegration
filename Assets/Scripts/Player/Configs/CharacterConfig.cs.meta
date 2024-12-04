@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 18c1ed87dc13f2c4dbafb3d171d631d1
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - GirlModel: {fileID: 2792080461655843969, guid: 4e6d30d4731b08d449446599591577bb, type: 3}
+  - BoyModel: {fileID: 7607981154579955156, guid: 34f6a3d82b733384cbb8ee511b48cf0b, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -40,7 +40,7 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""name"": ""Jump"",
                     ""type"": ""Button"",
                     ""id"": ""ef8b3952-7819-48dd-abfe-8ed6c91470cb"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -67,6 +67,33 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""name"": ""Respawn"",
                     ""type"": ""Button"",
                     ""id"": ""7ad202dd-ff78-434f-9d63-834fba33286e"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SwitchBoy"",
+                    ""type"": ""Button"",
+                    ""id"": ""6a95dfe6-9ec0-469d-aa2d-d478d61f73ff"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SwitchGirl"",
+                    ""type"": ""Button"",
+                    ""id"": ""b0aee5e6-8699-413c-9010-ab7aab06efbc"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""New action"",
+                    ""type"": ""Button"",
+                    ""id"": ""9552122c-735d-4569-8b0b-c6debbe88778"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -142,6 +169,17 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""c026cde1-a427-4eec-82f1-9d4c963e2cd0"",
+                    ""path"": """",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""92430626-92ba-470a-a9e6-3e895ef0b586"",
                     ""path"": ""<Keyboard>/space"",
                     ""interactions"": """",
@@ -155,6 +193,17 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""96611319-6455-4cc3-917b-5f560c356cbf"",
                     ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b239c62a-231e-4db6-aee3-b85ba3c8e897"",
+                    ""path"": ""<Keyboard>/0"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -227,6 +276,39 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""action"": ""Respawn"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bc98cd8b-98e5-4159-9373-a5946d9e86d2"",
+                    ""path"": ""<Keyboard>/b"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SwitchBoy"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7cca142c-3d48-4e79-9386-e769fc966e4d"",
+                    ""path"": ""<Keyboard>/g"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SwitchGirl"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0a6ab3d8-76cd-4c7b-b7f2-da7c578b89d1"",
+                    ""path"": """",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""New action"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -240,6 +322,9 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
         m_Player_Grab = m_Player.FindAction("Grab", throwIfNotFound: true);
         m_Player_Run = m_Player.FindAction("Run", throwIfNotFound: true);
         m_Player_Respawn = m_Player.FindAction("Respawn", throwIfNotFound: true);
+        m_Player_SwitchBoy = m_Player.FindAction("SwitchBoy", throwIfNotFound: true);
+        m_Player_SwitchGirl = m_Player.FindAction("SwitchGirl", throwIfNotFound: true);
+        m_Player_Newaction = m_Player.FindAction("New action", throwIfNotFound: true);
     }
 
     ~@PlayerControl()
@@ -311,6 +396,9 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Grab;
     private readonly InputAction m_Player_Run;
     private readonly InputAction m_Player_Respawn;
+    private readonly InputAction m_Player_SwitchBoy;
+    private readonly InputAction m_Player_SwitchGirl;
+    private readonly InputAction m_Player_Newaction;
     public struct PlayerActions
     {
         private @PlayerControl m_Wrapper;
@@ -320,6 +408,9 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
         public InputAction @Grab => m_Wrapper.m_Player_Grab;
         public InputAction @Run => m_Wrapper.m_Player_Run;
         public InputAction @Respawn => m_Wrapper.m_Player_Respawn;
+        public InputAction @SwitchBoy => m_Wrapper.m_Player_SwitchBoy;
+        public InputAction @SwitchGirl => m_Wrapper.m_Player_SwitchGirl;
+        public InputAction @Newaction => m_Wrapper.m_Player_Newaction;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -344,6 +435,15 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
             @Respawn.started += instance.OnRespawn;
             @Respawn.performed += instance.OnRespawn;
             @Respawn.canceled += instance.OnRespawn;
+            @SwitchBoy.started += instance.OnSwitchBoy;
+            @SwitchBoy.performed += instance.OnSwitchBoy;
+            @SwitchBoy.canceled += instance.OnSwitchBoy;
+            @SwitchGirl.started += instance.OnSwitchGirl;
+            @SwitchGirl.performed += instance.OnSwitchGirl;
+            @SwitchGirl.canceled += instance.OnSwitchGirl;
+            @Newaction.started += instance.OnNewaction;
+            @Newaction.performed += instance.OnNewaction;
+            @Newaction.canceled += instance.OnNewaction;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -363,6 +463,15 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
             @Respawn.started -= instance.OnRespawn;
             @Respawn.performed -= instance.OnRespawn;
             @Respawn.canceled -= instance.OnRespawn;
+            @SwitchBoy.started -= instance.OnSwitchBoy;
+            @SwitchBoy.performed -= instance.OnSwitchBoy;
+            @SwitchBoy.canceled -= instance.OnSwitchBoy;
+            @SwitchGirl.started -= instance.OnSwitchGirl;
+            @SwitchGirl.performed -= instance.OnSwitchGirl;
+            @SwitchGirl.canceled -= instance.OnSwitchGirl;
+            @Newaction.started -= instance.OnNewaction;
+            @Newaction.performed -= instance.OnNewaction;
+            @Newaction.canceled -= instance.OnNewaction;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -387,5 +496,8 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
         void OnGrab(InputAction.CallbackContext context);
         void OnRun(InputAction.CallbackContext context);
         void OnRespawn(InputAction.CallbackContext context);
+        void OnSwitchBoy(InputAction.CallbackContext context);
+        void OnSwitchGirl(InputAction.CallbackContext context);
+        void OnNewaction(InputAction.CallbackContext context);
     }
 }

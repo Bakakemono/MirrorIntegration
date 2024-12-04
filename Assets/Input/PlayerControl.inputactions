@@ -18,7 +18,7 @@
                     "name": "Jump",
                     "type": "Button",
                     "id": "ef8b3952-7819-48dd-abfe-8ed6c91470cb",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -45,6 +45,33 @@
                     "name": "Respawn",
                     "type": "Button",
                     "id": "7ad202dd-ff78-434f-9d63-834fba33286e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SwitchBoy",
+                    "type": "Button",
+                    "id": "6a95dfe6-9ec0-469d-aa2d-d478d61f73ff",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SwitchGirl",
+                    "type": "Button",
+                    "id": "b0aee5e6-8699-413c-9010-ab7aab06efbc",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "New action",
+                    "type": "Button",
+                    "id": "9552122c-735d-4569-8b0b-c6debbe88778",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -120,6 +147,17 @@
                 },
                 {
                     "name": "",
+                    "id": "c026cde1-a427-4eec-82f1-9d4c963e2cd0",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Movement",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "92430626-92ba-470a-a9e6-3e895ef0b586",
                     "path": "<Keyboard>/space",
                     "interactions": "",
@@ -133,6 +171,17 @@
                     "name": "",
                     "id": "96611319-6455-4cc3-917b-5f560c356cbf",
                     "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b239c62a-231e-4db6-aee3-b85ba3c8e897",
+                    "path": "<Keyboard>/0",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -203,6 +252,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "Respawn",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bc98cd8b-98e5-4159-9373-a5946d9e86d2",
+                    "path": "<Keyboard>/b",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwitchBoy",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7cca142c-3d48-4e79-9386-e769fc966e4d",
+                    "path": "<Keyboard>/g",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwitchGirl",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0a6ab3d8-76cd-4c7b-b7f2-da7c578b89d1",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "New action",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

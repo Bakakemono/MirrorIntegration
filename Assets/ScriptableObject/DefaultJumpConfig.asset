@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ef7018517b1c0c4484d3b28a2de385b, type: 3}
+  m_Name: DefaultJumpConfig
+  m_EditorClassIdentifier: 
+  jumpHeight: 5
+  timeToJumpApex: 1.5
+  desiredJumpLengthWalk: 25
+  desiredJumpLengthRun: 35
+  upwardMovementMultiplier: 0.5
+  downwardMovementMultiplier: 1
+  jumpCutOff: 2
+  fallSpeedLimit: 10
+  maxAirJumps: 0
+  enableCoyoteTime: 1
+  enableJumpBuffer: 1
+  coyoteTimeDuration: 0.15
+  jumpBufferDuration: 0.15

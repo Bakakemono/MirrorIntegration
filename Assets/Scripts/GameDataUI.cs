@@ -10,7 +10,7 @@ public class GameDataUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI pushPullStatusText;
 
     [Header("Player Data")]
-    [SerializeField] private HLPlayerController playerController;
+    [SerializeField] private Player playerController;
     [SerializeField] private PushableObject pushObject;
 
     private Rigidbody playerRigidbody;

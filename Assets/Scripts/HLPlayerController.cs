@@ -11,12 +11,12 @@ public class HLPlayerController : MonoBehaviour
     InputAction _jumpAction;
 
     [Header("Girl Body Params")]
-    [SerializeField] private GameObject _girlModel;
+    [SerializeField] private GameObject _GirlModel;
     [SerializeField] private Vector3 _girlSize;
 
     [Header("Boy Body Params")]
-    [SerializeField] private GameObject _boyModel;
-    [SerializeField] private Vector3 _boySize;
+    [SerializeField] private GameObject _BoyModel;
+    [SerializeField] private Vector3 _BoySize;
 
     [Header("Ground Movement Parameters")]
     [SerializeField] float _walkSpeed = 2f;
@@ -35,12 +35,15 @@ public class HLPlayerController : MonoBehaviour
     [Header("Jump Parameters")]
     [SerializeField, Tooltip("Maximum jump height")] float _jumpHeight = 2f;
     [SerializeField, Tooltip("Time to reach the apex of the jump")] float _timeToJumpApex = 0.5f;
-    [SerializeField, Tooltip("Desired horizontal distance to cover during a jump")] float _desiredJumpLength = 5f;
+    [SerializeField, Tooltip("Desired horizontal distance to cover during a jump when walking")] float _desiredJumpLengthWalk = 5f;
+    [SerializeField, Tooltip("Desired horizontal distance to cover during a jump when running")] float _desiredJumpLengthRun = 7f;
     [SerializeField, Tooltip("Gravity multiplier when going up")] float _upwardMovementMultiplier = 1f;
-    [SerializeField, Tooltip("Gravity multiplier when coming down")] float _downwardMovementMultiplier = 6.17f;
+    [SerializeField, Tooltip("Gravity multiplier when coming down")] float _downwardMovementMultiplier = 4f;
     [SerializeField, Tooltip("Gravity multiplier when jump button is released early")] float _jumpCutOff = 2f;
     [SerializeField, Tooltip("Maximum fall speed")] float _fallSpeedLimit = 20f;
     [SerializeField, Tooltip("Maximum number of air jumps")] int _maxAirJumps = 0;
+
+
 
     [SerializeField] bool _enableCoyoteTime = true;
     [SerializeField] bool _enableJumpBuffer = true;
@@ -57,9 +60,6 @@ public class HLPlayerController : MonoBehaviour
     float _gravity;
     float _jumpVelocity;
 
-    [Header("Gravity")]
-    [SerializeField] float _gravityScale = 1f;
-
     [SerializeField] Transform _cameraPosition;
     Rigidbody _rigidbody;
     CapsuleCollider _capsuleCollider;
@@ -71,6 +71,17 @@ public class HLPlayerController : MonoBehaviour
     [SerializeField] LayerMask _groundLayer;
 
     private Vector3 _spawnPosition;
+    private Vector3 _lastInputDirection = Vector3.zero;
+
+    // Variables to track changes in serialized fields
+    private float _prevJumpHeight;
+    private float _prevTimeToJumpApex;
+    private float _prevDesiredJumpLengthWalk;
+    private float _prevDesiredJumpLengthRun;
+    private float _previousMovementInputMagnitude = 0f;
+
+
+
 
     private bool _isRunning = false; // Variable to track running state
 
@@ -92,8 +103,6 @@ public class HLPlayerController : MonoBehaviour
         _jumpAction.Enable();
 
         _runAction = _playerControl.Player.Run;
-        _runAction.performed += OnRunPerformed;
-        _runAction.canceled += OnRunCanceled;
         _runAction.Enable();
 
         // Initialize respawn action
@@ -108,19 +117,32 @@ public class HLPlayerController : MonoBehaviour
         // Calculate total time in air
         float totalJumpTime = 2f * _timeToJumpApex;
 
-        // Calculate required horizontal speed
-        float requiredHorizontalSpeed = _desiredJumpLength / totalJumpTime;
+        // Calculate required horizontal speed for walking
+        float requiredHorizontalSpeedWalk = _desiredJumpLengthWalk / totalJumpTime;
+
+        // Calculate required horizontal speed for running
+        float requiredHorizontalSpeedRun = _desiredJumpLengthRun / totalJumpTime;
 
         // Set air movement speeds
-        _airWalkSpeed = requiredHorizontalSpeed;
-        _airRunSpeed = requiredHorizontalSpeed;
+        _airWalkSpeed = requiredHorizontalSpeedWalk;
+        _airRunSpeed = requiredHorizontalSpeedRun;
 
         // Disable default gravity
         _rigidbody.useGravity = false;
 
         // Set initial spawn position
         _spawnPosition = transform.position;
+
+        // Initialize previous values
+        _prevJumpHeight = _jumpHeight;
+        _prevTimeToJumpApex = _timeToJumpApex;
+        _prevDesiredJumpLengthWalk = _desiredJumpLengthWalk;
+        _prevDesiredJumpLengthRun = _desiredJumpLengthRun;
+
+        // Calculate initial derived parameters
+        CalculateDerivedParameters();
     }
+
 
     private void Update()
     {
@@ -133,6 +155,22 @@ public class HLPlayerController : MonoBehaviour
         Movement();
 
         HandleModelSwitching();
+
+        // Check for changes in parameters and recalculate if needed
+        if (_jumpHeight != _prevJumpHeight ||
+            _timeToJumpApex != _prevTimeToJumpApex ||
+            _desiredJumpLengthWalk != _prevDesiredJumpLengthWalk ||
+            _desiredJumpLengthRun != _prevDesiredJumpLengthRun)
+        {
+            // Recalculate derived parameters
+            CalculateDerivedParameters();
+
+            // Update previous values
+            _prevJumpHeight = _jumpHeight;
+            _prevTimeToJumpApex = _timeToJumpApex;
+            _prevDesiredJumpLengthWalk = _desiredJumpLengthWalk;
+            _prevDesiredJumpLengthRun = _desiredJumpLengthRun;
+        }
     }
 
     private void FixedUpdate()
@@ -178,6 +216,8 @@ public class HLPlayerController : MonoBehaviour
     private void Movement()
     {
         Vector2 movementInput = _movementAction.ReadValue<Vector2>();
+        Vector3 inputDirection = new Vector3(movementInput.x, 0, movementInput.y).normalized;
+        float movementInputMagnitude = movementInput.magnitude;
 
         // Determine target speed and acceleration based on grounded state
         float targetSpeed;
@@ -188,41 +228,76 @@ public class HLPlayerController : MonoBehaviour
         if (_isGrounded)
         {
             // Grounded movement parameters
-            targetSpeed = (_isRunning ? _runSpeed : _walkSpeed) * movementInput.magnitude;
+            targetSpeed = _isRunning ? _runSpeed : _walkSpeed;
             accelerationTime = _accelerationTime;
             decelerationTime = _decelerationTime;
-            maxAllowedSpeed = (_isRunning ? _runSpeed : _walkSpeed);
+
+            // Adjust maxAllowedSpeed to prevent immediate clamping when decelerating
+            maxAllowedSpeed = Mathf.Max(targetSpeed, _currentSpeed);
         }
         else
         {
             // Airborne movement parameters
-            targetSpeed = (_isRunning ? _airRunSpeed : _airWalkSpeed) * movementInput.magnitude;
+            targetSpeed = _isRunning ? _airRunSpeed : _airWalkSpeed;
             accelerationTime = _airAccelerationTime;
             decelerationTime = _airDecelerationTime;
             maxAllowedSpeed = float.MaxValue; // No speed limit in the air
         }
 
-        if (movementInput.magnitude > 0f)
+        if (movementInputMagnitude > 0f)
         {
-            // Accelerate towards target speed
-            float accelerationRate = targetSpeed / accelerationTime;
-            _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, accelerationRate * Time.deltaTime);
+            // Update last input direction
+            _lastInputDirection = inputDirection;
+
+            // Check if movement input just started
+            if (_previousMovementInputMagnitude == 0f)
+            {
+                // Starting from standstill, set current speed to walk speed
+                _currentSpeed = _walkSpeed;
+            }
+
+            // Determine if we are accelerating or decelerating
+            float speedDifference = targetSpeed - _currentSpeed;
+
+            float rate;
+            if (speedDifference > 0f)
+            {
+                // Accelerate
+                rate = Mathf.Abs(speedDifference) / accelerationTime;
+            }
+            else if (speedDifference < 0f)
+            {
+                // Decelerate
+                rate = Mathf.Abs(speedDifference) / decelerationTime;
+            }
+            else
+            {
+                rate = 0f;
+            }
+
+            // Adjust current speed towards target speed
+            _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, rate * Time.deltaTime);
         }
         else
         {
-            // Decelerate to zero
+            // Decelerate to zero when no movement input
             float decelerationRate = _currentSpeed / decelerationTime;
             _currentSpeed = Mathf.MoveTowards(_currentSpeed, 0f, decelerationRate * Time.deltaTime);
+
+            // Set _currentSpeed to zero if it's very close to zero
+            if (Mathf.Abs(_currentSpeed) < 0.01f)
+            {
+                _currentSpeed = 0f;
+            }
         }
 
-        // Clamp _currentSpeed to maxAllowedSpeed when grounded
-        if (_isGrounded)
+        // Clamp _currentSpeed to maxAllowedSpeed when accelerating
+        if (_isGrounded && _currentSpeed > maxAllowedSpeed)
         {
-            _currentSpeed = Mathf.Min(_currentSpeed, maxAllowedSpeed);
+            _currentSpeed = maxAllowedSpeed;
         }
 
-        Vector3 inputDirection = new Vector3(movementInput.x, 0, movementInput.y).normalized;
-        Vector3 playerMovement = inputDirection * _currentSpeed;
+        Vector3 playerMovement = _lastInputDirection * _currentSpeed;
 
         // Apply horizontal movement
         _rigidbody.velocity = new Vector3(
@@ -236,6 +311,7 @@ public class HLPlayerController : MonoBehaviour
 
         if (_jumpBufferCounter > 0f && canJump)
         {
+            // Reset vertical velocity before jumping
             _rigidbody.velocity = new Vector3(_rigidbody.velocity.x, 0f, _rigidbody.velocity.z);
             _rigidbody.velocity += Vector3.up * _jumpVelocity;
             _jumpBufferCounter = 0f;
@@ -247,7 +323,13 @@ public class HLPlayerController : MonoBehaviour
                 _airJumpsPerformed++;
             }
         }
+
+        // Update previous movement input magnitude
+        _previousMovementInputMagnitude = movementInputMagnitude;
     }
+
+
+
 
     private void ApplyGravity()
     {
@@ -323,12 +405,33 @@ public class HLPlayerController : MonoBehaviour
         _wasGroundedLastFrame = _isGrounded;
     }
 
+    private void CalculateDerivedParameters()
+    {
+        // Calculate gravity and jump velocity
+        _gravity = (-2f * _jumpHeight) / (_timeToJumpApex * _timeToJumpApex);
+        _jumpVelocity = Mathf.Abs(_gravity) * _timeToJumpApex;
+
+        // Calculate total time in air
+        float totalJumpTime = 2f * _timeToJumpApex;
+
+        // Calculate required horizontal speed for walking
+        float requiredHorizontalSpeedWalk = _desiredJumpLengthWalk / totalJumpTime;
+
+        // Calculate required horizontal speed for running
+        float requiredHorizontalSpeedRun = _desiredJumpLengthRun / totalJumpTime;
+
+        // Set air movement speeds
+        _airWalkSpeed = requiredHorizontalSpeedWalk;
+        _airRunSpeed = requiredHorizontalSpeedRun;
+    }
+
+
     private void HandleModelSwitching()
     {
         if (_isGirl)
         {
-            _girlModel.SetActive(true);
-            _boyModel.SetActive(false);
+            _GirlModel.SetActive(true);
+            _BoyModel.SetActive(false);
             _capsuleCollider.radius = _girlSize.x / 2f;
             _capsuleCollider.height = _girlSize.y;
 
@@ -336,23 +439,13 @@ public class HLPlayerController : MonoBehaviour
         }
         else if (_isBoy)
         {
-            _boyModel.SetActive(true);
-            _girlModel.SetActive(false);
-            _capsuleCollider.radius = _boySize.x / 2f;
-            _capsuleCollider.height = _boySize.y;
+            _BoyModel.SetActive(true);
+            _GirlModel.SetActive(false);
+            _capsuleCollider.radius = _BoySize.x / 2f;
+            _capsuleCollider.height = _BoySize.y;
 
             _isBoy = false;
         }
-    }
-
-    private void OnRunPerformed(InputAction.CallbackContext context)
-    {
-        _isRunning = true;
-    }
-
-    private void OnRunCanceled(InputAction.CallbackContext context)
-    {
-        _isRunning = false;
     }
 
     private void OnDrawGizmosSelected()
