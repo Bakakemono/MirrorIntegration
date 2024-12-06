@@ -65,6 +65,7 @@ public class PlayerMovement
             {
                 if (input.IsRunning)
                 {
+                    
                     // Si on commence à courir, on commence à la vitesse de marche
                     if (_currentSpeed < _Moveconfig.walkSpeed)
                     {
@@ -128,7 +129,7 @@ public class PlayerMovement
         _currentSpeed = Mathf.MoveTowards(_currentSpeed, 0f, decelerationRate * Time.deltaTime);
     }
 
-    public void OnLanding()
+    public void  OnLanding()
     {
         if (_wasAtRunSpeed)
         {

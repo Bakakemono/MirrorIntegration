@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   jumpHeight: 5
   timeToJumpApex: 1.5
-  desiredJumpLengthWalk: 25
-  desiredJumpLengthRun: 35
+  desiredJumpLengthWalk: 20
+  desiredJumpLengthRun: 25
   upwardMovementMultiplier: 0.5
   downwardMovementMultiplier: 1
   jumpCutOff: 2

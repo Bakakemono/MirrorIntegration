@@ -57,17 +57,6 @@ public class CharacterModel
         _isInitialized = true;
     }
 
-    private void AdjustModelPosition(GameObject model, Vector3 size)
-    {
-        if (model != null)
-        {
-            // Ajuste la position pour que les pieds soient au niveau du sol
-            // et que le centre du modèle corresponde au centre du collider
-            float heightOffset = size.y / 2f;
-            model.transform.localPosition = new Vector3(0, 0, 0);
-        }
-    }
-
     private void SetupGirlModel()
     {
         if (_girlModel != null && _boyModel != null)
