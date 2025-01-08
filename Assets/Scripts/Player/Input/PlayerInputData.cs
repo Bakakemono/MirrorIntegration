@@ -13,6 +13,7 @@ public struct PlayerInputData
     public bool WasJumpReleased { get; }
     public bool IsRunning { get; }
     public bool IsRespawnPressed { get; }
+    public bool IsGrabPressed { get; }  // Added for rope interaction
 
     public PlayerInputData(
         Vector2 movementInput,
@@ -20,7 +21,8 @@ public struct PlayerInputData
         bool jumpHeld,
         bool jumpReleased,
         bool running,
-        bool respawnPressed)
+        bool respawnPressed,
+        bool grabPressed)
     {
         MovementDirection = new Vector3(movementInput.x, 0, movementInput.y).normalized;
         MovementMagnitude = movementInput.magnitude;
@@ -29,5 +31,6 @@ public struct PlayerInputData
         WasJumpReleased = jumpReleased;
         IsRunning = running;
         IsRespawnPressed = respawnPressed;
+        IsGrabPressed = grabPressed;
     }
 }

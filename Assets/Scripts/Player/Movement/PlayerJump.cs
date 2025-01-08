@@ -5,8 +5,9 @@ public class PlayerJump
     private readonly Rigidbody _rigidbody;
     private readonly RuntimeJumpConfig _config;
     private readonly PlayerMovement _movement;
+    private GroundDetector _groundDetector;
 
-
+    private bool _isOnBeam;
     private float _coyoteTimeCounter;
     private float _jumpBufferCounter;
     private int _airJumpsPerformed;
@@ -29,8 +30,11 @@ public class PlayerJump
         _movement = movement;
     }
 
-    public void UpdateJump(PlayerInputData input, bool isGrounded, Vector3 lastInputDirection, bool wasAtRunSpeed)
+    public void UpdateJump(PlayerInputData input, bool isGrounded, Vector3 lastInputDirection, bool wasAtRunSpeed, bool isOnBeam)
     {
+        _isOnBeam = isOnBeam;
+
+        if (_isOnBeam) return;
         UpdateTimers(isGrounded);
         HandleJumpStart(input, isGrounded, lastInputDirection, wasAtRunSpeed);
         HandleJumpCancellation(input);
@@ -51,8 +55,6 @@ public class PlayerJump
         // Calculate required horizontal speeds
         float walkHorizontalSpeed = _config.desiredJumpLengthWalk / totalJumpTime;
         float runHorizontalSpeed = _config.desiredJumpLengthRun / totalJumpTime;
-
-        Debug.Log($"InitializeJumpParameters: Walk Speed={walkHorizontalSpeed}, Run Speed={runHorizontalSpeed}");
     }
 
     private void UpdateTimers(bool isGrounded)
@@ -62,7 +64,7 @@ public class PlayerJump
             if (!_wasGroundedLastFrame)
             {
                 CorrectGroundPosition();
-                _movement.OnLanding();  // Appel de la méthode OnLanding
+                _movement.OnLanding();
             }
             _coyoteTimeCounter = _config.coyoteTimeDuration;
             _airJumpsPerformed = 0;
@@ -80,6 +82,15 @@ public class PlayerJump
 
     private void HandleJumpStart(PlayerInputData input, bool isGrounded, Vector3 lastInputDirection,bool wasAtRunSpeed)
     {
+        // Add isOnBeam parameter
+        bool isOnBeam = (_groundDetector as GroundDetector)?.IsOnBeam ?? false;
+
+        // Don't allow jump if on beam
+        if (isOnBeam)
+        {
+            return;
+        }
+
         if (input.IsJumpPressed)
         {
             _jumpBufferCounter = _config.jumpBufferDuration;
@@ -97,37 +108,25 @@ public class PlayerJump
 
     private void ExecuteJump(bool isGrounded, Vector3 direction, PlayerInputData input,bool wasAtRunSpeed)
     {
-        // Calculate total time in air for horizontal movement
-        float totalJumpTime = _config.timeToJumpApex * 2f;
+        // Calculate base jump velocity
+        Vector3 jumpVelocityVector = Vector3.up * _baseJumpVelocity;
+        Debug.Log($"Jump Started - Initial Velocity: {_baseJumpVelocity}");
 
-        // Calculate horizontal speed based on whether running or walking
-        float desiredLength;
+        // Get current horizontal velocity
+        Vector3 horizontalVelocity = new Vector3(_rigidbody.velocity.x, 0, _rigidbody.velocity.z);
 
-        if (input.IsRunning && isGrounded && wasAtRunSpeed)
+        if (direction != Vector3.zero)
         {
-            desiredLength = _config.desiredJumpLengthRun;
-            Debug.Log("Using Run Jump Length");
-        }
-        else
-        {
-            desiredLength = _config.desiredJumpLengthWalk;
-            Debug.Log("Using Walk Jump Length");
-        }
+            // Apply the appropriate multiplier based on running state
+            float multiplier = wasAtRunSpeed ? _config.runAirVelocityMultiplier : _config.walkAirVelocityMultiplier;
+            horizontalVelocity *= multiplier;
 
-        float horizontalSpeed = desiredLength / totalJumpTime;
-
-        // Create jump velocity vector
-        Vector3 jumpVelocityVector = new Vector3(
-            direction.x * horizontalSpeed,
-            _baseJumpVelocity,
-            direction.z * horizontalSpeed
-        );
+            jumpVelocityVector.x = horizontalVelocity.x;
+            jumpVelocityVector.z = horizontalVelocity.z;
+        }
 
         // Apply the velocity
         _rigidbody.velocity = jumpVelocityVector;
-
-        Debug.Log($"Jump executed: Vertical={_baseJumpVelocity}, Horizontal={horizontalSpeed}, " +
-               $"WasAtRunSpeed={wasAtRunSpeed}, IsGrounded={isGrounded}");
 
         _jumpBufferCounter = 0f;
         _coyoteTimeCounter = 0f;
@@ -152,6 +151,7 @@ public class PlayerJump
     private void ApplyGravity(bool isJumpHeld)
     {
         float gravityMultiplier = DetermineGravityMultiplier(isJumpHeld);
+        Debug.Log($"Going Up - gravityMultiplier: {gravityMultiplier}");
         Vector3 gravity = new Vector3(0f, _baseGravity * gravityMultiplier, 0f);
         _rigidbody.AddForce(gravity, ForceMode.Acceleration);
         LimitFallSpeed();
@@ -163,18 +163,17 @@ public class PlayerJump
 
         if (verticalVelocity > 0.01f)
         {
-            return isJumpHeld && _isJumping
-                ? _config.upwardMovementMultiplier
-                : _config.jumpCutOff;
+            return _config.upwardMovementMultiplier; // Full jump height
         }
-
         if (verticalVelocity < -0.01f)
         {
             if (_wasGroundedLastFrame)
             {
                 _isJumping = false;
             }
-            return _config.downwardMovementMultiplier;
+            // More gradual increase in fall speed
+            float fallProgress = Mathf.Abs(verticalVelocity) / _config.fallSpeedLimit;
+            return Mathf.Lerp(1f, _config.downwardMovementMultiplier, fallProgress);
         }
 
         return 1f;
@@ -197,7 +196,17 @@ public class PlayerJump
             if (Mathf.Abs(_rigidbody.velocity.y) < 0.1f)
             {
                 Vector3 velocity = _rigidbody.velocity;
+
+                // Zero out Y velocity
                 velocity.y = 0;
+
+                // Reduce horizontal movement on landing if no input
+                if (_movement.LastInputDirection == Vector3.zero)
+                {
+                    velocity.x = 0;
+                    velocity.z = 0;
+                }
+
                 _rigidbody.velocity = velocity;
             }
         }

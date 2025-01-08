@@ -13,7 +13,7 @@ public class PlayerMovement
     private float _airWalkSpeed;
     private float _airRunSpeed;
 
-    private const float RUN_SPEED_THRESHOLD = 0.90f; // 90% de la vitesse de cours
+    private const float RUN_SPEED_THRESHOLD = 0.75f; // 90% de la vitesse de cours
     private bool _wasAtRunSpeed;  // Pour tracker si on était à vitesse de course
 
     public Vector3 LastInputDirection => _lastInputDirection;
@@ -42,19 +42,34 @@ public class PlayerMovement
     {
         // Calculate like in the original script
         float totalJumpTime = 2f * _jumpConfig.timeToJumpApex;
-        _airWalkSpeed = _jumpConfig.desiredJumpLengthWalk / totalJumpTime;
-        _airRunSpeed = _jumpConfig.desiredJumpLengthRun / totalJumpTime;
-
-        Debug.Log($"Air speeds calculated - Walk: {_airWalkSpeed}, Run: {_airRunSpeed}");
+        _airWalkSpeed = _jumpConfig.walkAirVelocityMultiplier * _Moveconfig.walkSpeed;
+        _airRunSpeed = _jumpConfig.runAirVelocityMultiplier * _Moveconfig.runSpeed;
     }
 
-    public void UpdateMovement(PlayerInputData input, bool isGrounded)
+    public void UpdateMovement(PlayerInputData input, bool isGrounded, bool isOnBeam)
     {
         CalculateAirSpeeds();
         UpdateCurrentSpeedState(isGrounded);
+        if (isOnBeam)
+        {
+            // Only use X component of input
+            float xInput = input.MovementDirection.x;
+            _currentSpeed = _Moveconfig.walkSpeed * 0.6f;
+
+            // Only apply X movement
+            _lastInputDirection = new Vector3(xInput, 0, 0);
+            Vector3 Xmovement = _lastInputDirection * _currentSpeed;
+
+            // Force Z velocity to zero when on beam
+            _rigidbody.velocity = new Vector3(Xmovement.x, _rigidbody.velocity.y, 0);
+            return;  // Exit early, don't process other movement
+        }
 
         Vector3 inputDirection = input.MovementDirection;
         float movementMagnitude = input.MovementMagnitude;
+
+        // Always update last input direction based on current input
+        _lastInputDirection = movementMagnitude > 0f ? inputDirection : Vector3.zero;
 
         if (movementMagnitude > 0f)
         {
@@ -79,6 +94,9 @@ public class PlayerMovement
                     // Vitesse de marche instantanée
                     _currentSpeed = _Moveconfig.walkSpeed;
                 }
+                // Apply ground movement
+                Vector3 movementSpeed = _lastInputDirection * _currentSpeed;
+                _rigidbody.velocity = new Vector3(movementSpeed.x, _rigidbody.velocity.y, movementSpeed.z);
             }
             else
             {
@@ -92,6 +110,15 @@ public class PlayerMovement
                     targetSpeed = _airWalkSpeed;
                 }
                 _currentSpeed = targetSpeed;
+
+                // When no input in air, maintain momentum with very slight decay
+                Vector3 currentHorizontalVelocity = new Vector3(_rigidbody.velocity.x, 0, _rigidbody.velocity.z);
+                float decay = 0.999f; // Very slight decay
+                _rigidbody.velocity = new Vector3(
+                    currentHorizontalVelocity.x * decay,
+                    _rigidbody.velocity.y,
+                    currentHorizontalVelocity.z * decay
+                );
             }
 
             float accelerationTime = isGrounded ?
@@ -131,13 +158,21 @@ public class PlayerMovement
 
     public void  OnLanding()
     {
-        if (_wasAtRunSpeed)
+        // Only set speed if we had previous movement
+        if (_lastInputDirection != Vector3.zero)
         {
-            _currentSpeed = _Moveconfig.runSpeed;
+            if (_wasAtRunSpeed)
+            {
+                _currentSpeed = _Moveconfig.runSpeed;
+            }
+            else
+            {
+                _currentSpeed = _Moveconfig.walkSpeed;
+            }
         }
         else
         {
-            _currentSpeed = _Moveconfig.walkSpeed;
+            _currentSpeed = 0f;
         }
     }
 

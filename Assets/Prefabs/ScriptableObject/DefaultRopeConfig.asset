@@ -9,14 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7462a32b20f6bee44a7c292df494a25d, type: 3}
-  m_Name: DefaultMovementConfig
+  m_Script: {fileID: 11500000, guid: 0cd7521c46545be43bc62b0340da2c9b, type: 3}
+  m_Name: DefaultRopeConfig
   m_EditorClassIdentifier: 
-  walkSpeed: 4
-  runSpeed: 6
-  accelerationTime: 0.3
-  decelerationTime: 0.19
-  airWalkSpeed: 0
-  airRunSpeed: 0
-  airAccelerationTime: 0.2
-  airDecelerationTime: 0.2
+  ropeLength: 5
+  swingForce: 10
+  damping: 0.5
+  springForce: 100
+  massScale: 4.5
+  detachmentUpwardBoost: 2
+  minimumDetachmentVelocity: 2

@@ -15,6 +15,8 @@ public class RuntimeJumpConfig
     public int maxAirJumps;
     public float desiredJumpLengthWalk;
     public float desiredJumpLengthRun;
+    public float walkAirVelocityMultiplier = 0.8f; // Added
+    public float runAirVelocityMultiplier = 1.2f;  // Added
 
     [Header("Jump Assists")]
     public bool enableCoyoteTime;
@@ -31,6 +33,8 @@ public class RuntimeJumpConfig
         timeToJumpApex = config.timeToJumpApex;
         upwardMovementMultiplier = config.upwardMovementMultiplier;
         downwardMovementMultiplier = config.downwardMovementMultiplier;
+        walkAirVelocityMultiplier = config.walkAirVelocityMultiplier;
+        runAirVelocityMultiplier = config.runAirVelocityMultiplier;
         jumpCutOff = config.jumpCutOff;
         fallSpeedLimit = config.fallSpeedLimit;
         maxAirJumps = config.maxAirJumps;

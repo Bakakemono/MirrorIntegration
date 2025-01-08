@@ -12,12 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ef7018517b1c0c4484d3b28a2de385b, type: 3}
   m_Name: DefaultJumpConfig
   m_EditorClassIdentifier: 
-  jumpHeight: 5
-  timeToJumpApex: 1.5
-  desiredJumpLengthWalk: 20
-  desiredJumpLengthRun: 25
-  upwardMovementMultiplier: 0.5
-  downwardMovementMultiplier: 1
+  jumpHeight: 4
+  timeToJumpApex: 1.3
+  desiredJumpLengthWalk: 0
+  desiredJumpLengthRun: 0
+  upwardMovementMultiplier: 0.7
+  downwardMovementMultiplier: 0.9
+  walkAirVelocityMultiplier: 1.1
+  runAirVelocityMultiplier: 1.1
   jumpCutOff: 2
   fallSpeedLimit: 10
   maxAirJumps: 0

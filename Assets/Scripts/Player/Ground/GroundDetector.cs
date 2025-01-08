@@ -6,13 +6,19 @@ public class GroundDetector : IGroundDetector
 {
     private readonly CapsuleCollider _collider;
     private readonly LayerMask _groundLayer;
+    private readonly LayerMask _beamLayer;
     private readonly float _extraHeight = 0.1f;
     private readonly float _sphereRadiusMultiplier = 0.9f;  // Pour éviter les accrochages sur les bords
 
-    public GroundDetector(CapsuleCollider collider, LayerMask groundLayer)
+    // Info about what we hit
+    private bool _isOnBeam;
+    public bool IsOnBeam => _isOnBeam;
+
+    public GroundDetector(CapsuleCollider collider, LayerMask groundLayer,LayerMask beamLayer)
     {
         _collider = collider;
         _groundLayer = groundLayer;
+        _beamLayer = beamLayer;
     }
 
     public bool CheckGround()
@@ -54,9 +60,21 @@ public class GroundDetector : IGroundDetector
             );
         }
 
+        // Check beam
+        bool isOnBeam = Physics.SphereCast(
+            origin,
+            radius,
+            Vector3.down,
+            out RaycastHit beamHit,
+            maxDistance,
+            _beamLayer
+        );
+
+        _isOnBeam = isOnBeam;
 
 
-        return isGrounded;
+        // Return true if we hit either ground or beam
+        return isGrounded || isOnBeam;
     }
 
     public void DrawDebugGizmos()
