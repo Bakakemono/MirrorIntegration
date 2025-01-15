@@ -14,9 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   walkSpeed: 4
   runSpeed: 6
+<<<<<<< Updated upstream
   accelerationTime: 0.3
   decelerationTime: 0.19
   airWalkSpeed: 0
   airRunSpeed: 0
   airAccelerationTime: 0.2
   airDecelerationTime: 0.2
+=======
+  accelerationTime: 0.2
+  decelerationTime: 0.2
+  airWalkSpeed: 1
+  airRunSpeed: 1.5
+  airAccelerationTime: 0.4
+  airDecelerationTime: 0.4
+>>>>>>> Stashed changes

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ef7018517b1c0c4484d3b28a2de385b, type: 3}
   m_Name: DefaultJumpConfig
   m_EditorClassIdentifier: 
+<<<<<<< Updated upstream
   jumpHeight: 2
   timeToJumpApex: 0.8
   desiredJumpLengthWalk: 0
@@ -22,8 +23,18 @@ MonoBehaviour:
   runAirVelocityMultiplier: 1.1
   jumpCutOff: 2
   fallSpeedLimit: 10
+=======
+  jumpHeight: 3.5
+  timeToJumpApex: 1.3
+  upwardMovementMultiplier: 1
+  downwardMovementMultiplier: 2.8
+  jumpCutOff: 2.5
+  fallSpeedLimit: 12
+>>>>>>> Stashed changes
   maxAirJumps: 0
+  walkAirVelocityMultiplier: 2
+  runAirVelocityMultiplier: 3
   enableCoyoteTime: 1
   enableJumpBuffer: 1
-  coyoteTimeDuration: 0.15
-  jumpBufferDuration: 0.15
+  coyoteTimeDuration: 0.1
+  jumpBufferDuration: 0.1
