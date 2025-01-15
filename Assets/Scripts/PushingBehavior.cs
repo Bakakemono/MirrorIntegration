@@ -1,63 +1,76 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
-public class PlayerPush {
-    private Transform _transform;
-    private Rigidbody _rigidbody;
+public class PushingBehavior : MonoBehaviour {
 
-    RuntimePushConfig _config;
+    // Register any methods that need to be called if the player or the box start to fall.
+    public Action _onReleasing;
+
+    [Header("Collision detection Box Params")]
+    [SerializeField] private Transform _grabBoxDetectionPostion;
+    [SerializeField] private Vector3 _grabBoxDetectionDimension;
     
+    private Rigidbody _rigidbody;
     Vector3 _pushingDirection = Vector3.zero;
     PushableObject _currentPushedObject;
-    
-    bool isPushing = false;
-    public bool _isPushing {
-        get {
-            return isPushing;
-        }
-    }
+    bool _isPushing = false;
     float _pushingSpeed = 0f;
     float _pullingSpeed = 0f;
+
+    [SerializeField] LayerMask _pushableObjectLayer;
 
     float _heightWhenPushing = 0f;
     float _pushedObjectHeight = 0f;
 
-    public PlayerPush(RuntimePushConfig config, Transform transform, Rigidbody rigidBody) {
-        _config = config;
-        _transform = transform;
-        _rigidbody = rigidBody;
+    private void Start() {
+        _rigidbody = GetComponent<Rigidbody>();
+    }
+
+    private void FixedUpdate() {
+        if(_isPushing && (
+            (transform.position.y < _heightWhenPushing - 0.1f || transform.position.y > _heightWhenPushing + 0.1f) ||
+            (_currentPushedObject.transform.position.y < _pushedObjectHeight - 0.1f || _currentPushedObject.transform.position.y > _pushedObjectHeight + 0.1f)
+            )) {
+            _onReleasing.Invoke();
+            _isPushing = false;
+            _currentPushedObject.StopPushPull();
+        }
     }
 
     // Grab the object in the detection area.
     // Return true if a grabable object has been found the lock classic control from player then call WhilePushing(Vector2 movementInput).
     // Return false if there is no object to grab or if the player in release on in hand.
-    public void Grab() {
-        if(isPushing) {
-            isPushing = false;
+    public bool Grab() {
+        if(_isPushing) {
+            _isPushing = false;
             _currentPushedObject.StopPushPull();
-            return;
+            return false;
         }
         else {
             Collider[] _detectedObjects =
                 Physics.OverlapBox(
-                    _transform.TransformPoint(_config._grabBoxDetectionPostion),
-                    _config._grabBoxDetectionDimension / 2f,
-                    _transform.rotation,
-                    _config._pushableObjectLayerMask
+                    _grabBoxDetectionPostion.position,
+                    _grabBoxDetectionDimension / 2f,
+                    transform.rotation,
+                    _pushableObjectLayer
                     );
 
             if(_detectedObjects.Length > 0) {
                 _currentPushedObject = _detectedObjects[0].GetComponent<PushableObject>();
-                _currentPushedObject.StartPushPull(_transform.gameObject);
+                _currentPushedObject.StartPushPull(gameObject);
                 _pushingSpeed = _currentPushedObject.GetPushingSpeed();
                 _pullingSpeed = _currentPushedObject.GetPullingSpeed();
 
                 // Register current elevation for fall detection.
                 _pushedObjectHeight = _currentPushedObject.transform.position.y;
-                _heightWhenPushing = _transform.position.y;
+                _heightWhenPushing = transform.position.y;
 
                 // Determine the direction in which the player is going to push.
-                Vector3 localPos = _currentPushedObject.transform.InverseTransformPoint(_transform.position);
+                Vector3 localPos = _currentPushedObject.transform.InverseTransformPoint(transform.position);
 
                 if(MathF.Abs(localPos.x) > Mathf.Abs(localPos.z)) {
 
@@ -80,25 +93,17 @@ public class PlayerPush {
                     }
                 }
 
-                _transform.rotation = Quaternion.LookRotation(_pushingDirection);
-                isPushing = true;
-                return;
+                transform.rotation = Quaternion.LookRotation(_pushingDirection);
+                _isPushing = true;
+                return true;
             }
-            return;
+            return false;
         }
     }
 
     public void WhilePushing(Vector2 movementInput) {
-        if(!isPushing)
+        if(!_isPushing)
             return;
-
-        if((_transform.position.y < _heightWhenPushing - 0.1f || _transform.position.y > _heightWhenPushing + 0.1f) ||
-            (_currentPushedObject.transform.position.y < _pushedObjectHeight - 0.1f || _currentPushedObject.transform.position.y > _pushedObjectHeight + 0.1f)
-            ) {
-            isPushing = false;
-            _currentPushedObject.StopPushPull();
-            return;
-        }
 
         Vector3 convertedMovenentInput = new Vector3(movementInput.x, 0f, movementInput.y).normalized;
 
@@ -111,24 +116,10 @@ public class PlayerPush {
             _rigidbody.velocity = projectedDirection * _pullingSpeed + Vector3.up * _rigidbody.velocity.y;
         }
 
-        _transform.rotation = Quaternion.LookRotation(_pushingDirection);
+        transform.rotation = Quaternion.LookRotation(_pushingDirection);
     }
 
     public PushableObject GetPushedObject() {
         return _currentPushedObject;
-    }
-
-    public void DrawGizmos() {
-        if(_config._grabBoxDetectionPostion == null)
-            return;
-
-        Gizmos.matrix = _transform.localToWorldMatrix;
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(
-            _config._grabBoxDetectionPostion,
-            _config._grabBoxDetectionDimension
-            );
-
-        Gizmos.matrix = _transform.worldToLocalMatrix;
     }
 }
