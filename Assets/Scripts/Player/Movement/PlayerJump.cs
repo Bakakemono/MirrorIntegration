@@ -4,14 +4,10 @@ public class PlayerJump
 {
     private readonly Rigidbody _rigidbody;
     private readonly RuntimeJumpConfig _config;
-    private readonly RuntimeMovementConfig _moveconfig;
     private readonly PlayerMovement _movement;
     private GroundDetector _groundDetector;
 
-<<<<<<< Updated upstream
     private bool _isOnBeam;
-=======
->>>>>>> Stashed changes
     private float _coyoteTimeCounter;
     private float _jumpBufferCounter;
     private int _airJumpsPerformed;
@@ -22,18 +18,16 @@ public class PlayerJump
     private float _baseGravity;
     private float _baseJumpVelocity;
     private float _runningJumpVelocity;
-    Vector3 jumpVelocityVector;
 
 
     public bool IsJumping => _isJumping;
 
-    public PlayerJump(Rigidbody rigidbody, RuntimeJumpConfig config, PlayerMovement movement, RuntimeMovementConfig moveconfig)
+    public PlayerJump(Rigidbody rigidbody, RuntimeJumpConfig config, PlayerMovement movement)
     {
         _rigidbody = rigidbody;
         _config = config;
-        _movement = movement;
         InitializeJumpParameters();
-        _moveconfig = moveconfig;   
+        _movement = movement;
     }
 
     public void UpdateJump(PlayerInputData input, bool isGrounded, Vector3 lastInputDirection, bool wasAtRunSpeed, bool isOnBeam)
@@ -57,13 +51,10 @@ public class PlayerJump
 
         // Calculate total time in air
         float totalJumpTime = 2f * _config.timeToJumpApex;
-<<<<<<< Updated upstream
 
         // Calculate required horizontal speeds
         float walkHorizontalSpeed = _config.desiredJumpLengthWalk / totalJumpTime;
         float runHorizontalSpeed = _config.desiredJumpLengthRun / totalJumpTime;
-=======
->>>>>>> Stashed changes
     }
 
     private void UpdateTimers(bool isGrounded)
@@ -115,9 +106,8 @@ public class PlayerJump
         }
     }
 
-    private void ExecuteJump(bool isGrounded, Vector3 direction, PlayerInputData input, bool wasAtRunSpeed)
+    private void ExecuteJump(bool isGrounded, Vector3 direction, PlayerInputData input,bool wasAtRunSpeed)
     {
-<<<<<<< Updated upstream
         // Calculate base jump velocity
         Vector3 jumpVelocityVector = Vector3.up * _baseJumpVelocity;
         Debug.Log($"Jump Started - Initial Velocity: {_baseJumpVelocity}");
@@ -138,36 +128,14 @@ public class PlayerJump
         // Apply the velocity
         _rigidbody.velocity = jumpVelocityVector;
 
-=======
-        // Base vertical velocity
-        jumpVelocityVector = Vector3.up * _baseJumpVelocity;
-
-        // Calculate horizontal velocity
-        if (direction != Vector3.zero)
-        {
-            float baseSpeed = wasAtRunSpeed ? _moveconfig.runSpeed : _moveconfig.walkSpeed;
-            float multiplier = wasAtRunSpeed ? _config.runAirVelocityMultiplier : _config.walkAirVelocityMultiplier;
-            Vector3 horizontalVelocity = direction * baseSpeed * multiplier;
-
-            // Store current Y velocity
-            float currentYVelocity = _rigidbody.velocity.y;
-
-            // Apply new velocity
-            _rigidbody.velocity = new Vector3(horizontalVelocity.x, currentYVelocity, horizontalVelocity.z);
-
-            // Then add the jump
-            _rigidbody.AddForce(jumpVelocityVector, ForceMode.VelocityChange);
-        }
-        else
-        {
-            _rigidbody.velocity = jumpVelocityVector;
-        }
-
->>>>>>> Stashed changes
         _jumpBufferCounter = 0f;
         _coyoteTimeCounter = 0f;
         _isJumping = true;
 
+        if (!isGrounded && !(_config.enableCoyoteTime && _coyoteTimeCounter > 0f))
+        {
+            _airJumpsPerformed++;
+        }
     }
 
     private void HandleJumpCancellation(PlayerInputData input)
@@ -195,12 +163,7 @@ public class PlayerJump
 
         if (verticalVelocity > 0.01f)
         {
-<<<<<<< Updated upstream
             return _config.upwardMovementMultiplier; // Full jump height
-=======
-            // More consistent upward movement
-            return _config.upwardMovementMultiplier;
->>>>>>> Stashed changes
         }
         if (verticalVelocity < -0.01f)
         {
@@ -221,9 +184,6 @@ public class PlayerJump
         if (_rigidbody.velocity.y < -_config.fallSpeedLimit)
         {
             Vector3 velocity = _rigidbody.velocity;
-            // Add slight horizontal velocity dampening during falls
-            velocity.x *= 0.98f;
-            velocity.z *= 0.98f;
             velocity.y = -_config.fallSpeedLimit;
             _rigidbody.velocity = velocity;
         }

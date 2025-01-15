@@ -13,16 +13,10 @@ public class RuntimeJumpConfig
     public float jumpCutOff;
     public float fallSpeedLimit;
     public int maxAirJumps;
-<<<<<<< Updated upstream
     public float desiredJumpLengthWalk;
     public float desiredJumpLengthRun;
     public float walkAirVelocityMultiplier = 0.8f; // Added
     public float runAirVelocityMultiplier = 1.2f;  // Added
-=======
-    public float airVelocityMultiplier;
-    public float walkAirVelocityMultiplier;
-    public float runAirVelocityMultiplier;
->>>>>>> Stashed changes
 
     [Header("Jump Assists")]
     public bool enableCoyoteTime;
@@ -33,6 +27,8 @@ public class RuntimeJumpConfig
     public RuntimeJumpConfig(JumpConfig config)
     {
         // Copy values from ScriptableObject
+        desiredJumpLengthWalk = config.desiredJumpLengthWalk;
+        desiredJumpLengthRun = config.desiredJumpLengthRun;
         jumpHeight = config.jumpHeight;
         timeToJumpApex = config.timeToJumpApex;
         upwardMovementMultiplier = config.upwardMovementMultiplier;
@@ -46,7 +42,5 @@ public class RuntimeJumpConfig
         coyoteTimeDuration = config.coyoteTimeDuration;
         enableJumpBuffer = config.enableJumpBuffer;
         jumpBufferDuration = config.jumpBufferDuration;
-        walkAirVelocityMultiplier = config.walkAirVelocityMultiplier;
-        runAirVelocityMultiplier = config.runAirVelocityMultiplier;
     }
 }

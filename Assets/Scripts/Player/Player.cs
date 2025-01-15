@@ -54,14 +54,8 @@ public class Player : MonoBehaviour
 
         _input = new PlayerInputHandler();
         _movement = new PlayerMovement(rb, RuntimeMovementConfig,RuntimejumpConfig);
-<<<<<<< Updated upstream
         _jump = new PlayerJump(rb, RuntimejumpConfig, _movement);
         _groundDetector = new GroundDetector(capsuleCollider, groundLayer,beamLayer);
-=======
-        _jump = new PlayerJump(rb, RuntimejumpConfig, _movement, RuntimeMovementConfig);
-        _movement.SetJumpReference(_jump);
-        _groundDetector = new GroundDetector(capsuleCollider, groundLayer);
->>>>>>> Stashed changes
         _characterModel = new CharacterModel(capsuleCollider, characterConfig,transform);
 
         _spawnPosition = transform.position;
@@ -96,25 +90,8 @@ public class Player : MonoBehaviour
         bool isGrounded = _groundDetector.CheckGround();
         bool isOnBeam = (_groundDetector as GroundDetector).IsOnBeam;
 
-<<<<<<< Updated upstream
         _movement.UpdateMovement(inputData, isGrounded,isOnBeam);
         _jump.UpdateJump(inputData, isGrounded, _movement.LastInputDirection, _movement.WasAtRunSpeed, isOnBeam);
-=======
-        // First handle ground movement
-        if (isGrounded)
-        {
-            _movement.UpdateMovement(inputData, isGrounded);
-        }
-
-        // Then handle jump - this will preserve jump velocity
-        _jump.UpdateJump(inputData, isGrounded, _movement.LastInputDirection, _movement.WasAtRunSpeed);
-
-        // After jump, only update movement if we're not jumping
-        if (!isGrounded && !_jump.IsJumping)
-        {
-            _movement.UpdateMovement(inputData, isGrounded);
-        }
->>>>>>> Stashed changes
 
         if (inputData.IsRespawnPressed)
         {
@@ -171,6 +148,10 @@ public class Player : MonoBehaviour
         if (Application.isPlaying && _jump != null)
         {
             _jump.UpdateJumpParameters();
+        }
+        if (Application.isPlaying && _movement != null)
+        {
+            _movement.UpdateAirSpeedParameters();
         }
 
         if (movementConfigAsset == null)

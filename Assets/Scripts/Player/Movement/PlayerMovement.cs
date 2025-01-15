@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerMovement
@@ -8,40 +10,30 @@ public class PlayerMovement
 
     private float _currentSpeed = 0f;
     private Vector3 _lastInputDirection = Vector3.zero;
-<<<<<<< Updated upstream
     private float _airWalkSpeed;
     private float _airRunSpeed;
 
     private const float RUN_SPEED_THRESHOLD = 0.75f; // 90% de la vitesse de cours
-=======
-    private const float RUN_SPEED_THRESHOLD = 0.90f; // 90% de la vitesse de cours
->>>>>>> Stashed changes
     private bool _wasAtRunSpeed;  // Pour tracker si on était à vitesse de course
 
     public Vector3 LastInputDirection => _lastInputDirection;
     public bool WasAtRunSpeed => _wasAtRunSpeed;
 
-    private PlayerJump _jump;
-
-    public void SetJumpReference(PlayerJump jump)
-    {
-        _jump = jump;
-    }
 
     public PlayerMovement(Rigidbody rigidbody, RuntimeMovementConfig Moveconfig, RuntimeJumpConfig jumpConfig)
     {
         _rigidbody = rigidbody;
         _Moveconfig = Moveconfig;
-        _jumpConfig = jumpConfig;
+        _jumpConfig = jumpConfig; ;
     }
 
     private void UpdateCurrentSpeedState(bool isGrounded)
     {
+        // On vérifie la vitesse uniquement quand on est au sol
         if (isGrounded)
         {
             _wasAtRunSpeed = _currentSpeed >= (_Moveconfig.runSpeed * RUN_SPEED_THRESHOLD);
         }
-<<<<<<< Updated upstream
         // En l'air, on garde l'état précédent
         // Ne pas mettre à false quand on est en l'air
     }
@@ -52,12 +44,11 @@ public class PlayerMovement
         float totalJumpTime = 2f * _jumpConfig.timeToJumpApex;
         _airWalkSpeed = _jumpConfig.walkAirVelocityMultiplier * _Moveconfig.walkSpeed;
         _airRunSpeed = _jumpConfig.runAirVelocityMultiplier * _Moveconfig.runSpeed;
-=======
->>>>>>> Stashed changes
     }
 
     public void UpdateMovement(PlayerInputData input, bool isGrounded, bool isOnBeam)
     {
+        CalculateAirSpeeds();
         UpdateCurrentSpeedState(isGrounded);
         if (isOnBeam)
         {
@@ -84,23 +75,25 @@ public class PlayerMovement
         {
             _lastInputDirection = inputDirection;
 
+            float targetSpeed;
             if (isGrounded)
             {
-                // Ground movement remains the same
                 if (input.IsRunning)
                 {
+                    
+                    // Si on commence à courir, on commence à la vitesse de marche
                     if (_currentSpeed < _Moveconfig.walkSpeed)
                     {
                         _currentSpeed = _Moveconfig.walkSpeed;
                     }
-                    float targetSpeed = _Moveconfig.runSpeed;
+                    targetSpeed = _Moveconfig.runSpeed;
                     AccelerateTowardTargetSpeed(targetSpeed, _Moveconfig.accelerationTime);
                 }
                 else
                 {
+                    // Vitesse de marche instantanée
                     _currentSpeed = _Moveconfig.walkSpeed;
                 }
-<<<<<<< Updated upstream
                 // Apply ground movement
                 Vector3 movementSpeed = _lastInputDirection * _currentSpeed;
                 _rigidbody.velocity = new Vector3(movementSpeed.x, _rigidbody.velocity.y, movementSpeed.z);
@@ -127,18 +120,23 @@ public class PlayerMovement
                     currentHorizontalVelocity.z * decay
                 );
             }
-=======
->>>>>>> Stashed changes
 
-                Vector3 movement = _lastInputDirection * _currentSpeed;
-                _rigidbody.velocity = new Vector3(movement.x, _rigidbody.velocity.y, movement.z);
-            }
+            float accelerationTime = isGrounded ?
+                _Moveconfig.accelerationTime :
+                _Moveconfig.airAccelerationTime;
         }
-        else if (isGrounded)
+        else
         {
-            _lastInputDirection = Vector3.zero;
             DecelerateToStop(isGrounded);
         }
+
+        Vector3 movement = _lastInputDirection * _currentSpeed;
+        _rigidbody.velocity = new Vector3(movement.x, _rigidbody.velocity.y, movement.z);
+    }
+
+    public void UpdateAirSpeedParameters()
+    {
+        CalculateAirSpeeds();
     }
 
     private void AccelerateTowardTargetSpeed(float targetSpeed, float accelerationTime)
@@ -158,7 +156,7 @@ public class PlayerMovement
         _currentSpeed = Mathf.MoveTowards(_currentSpeed, 0f, decelerationRate * Time.deltaTime);
     }
 
-    public void OnLanding()
+    public void  OnLanding()
     {
         // Only set speed if we had previous movement
         if (_lastInputDirection != Vector3.zero)
