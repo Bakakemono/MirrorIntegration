@@ -6,6 +6,8 @@ public class PlanetOrbit : MonoBehaviour
     [SerializeField] private float orbitSpeed = 10f;
     private bool isOrbiting = true;
 
+    public bool IsOrbiting => isOrbiting;  // Add this property
+
     void Update()
     {
         if (isOrbiting && sun != null)
