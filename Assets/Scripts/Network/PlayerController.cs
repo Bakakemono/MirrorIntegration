@@ -4,6 +4,7 @@ using Org.BouncyCastle.Asn1.BC;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -74,13 +75,14 @@ public class PlayerController : NetworkBehaviour {
     float _gravity;
     float _jumpVelocity;
 
-    [Header("Grab Params")]
-    [SerializeField] Transform _grabBoxDetectionPostion;
-    [SerializeField] Vector3 _grabBoxDetectionDimension;
-    Vector3 _pushingDirection = Vector3.zero;
-    PushableObject _currentPushedObject;
-    float _pushingSpeed = 0f;
-    float _pullingSpeed = 0f;
+    [Header("Climb Params")]
+    [SerializeField] float _climbMaxDistance;
+    [SerializeField] float _climbMaxHeight;
+    float _climbSpeed = 1f;
+    float _playerWidth = 0f;
+    float _playerHeight = 0f;
+
+    [SerializeField] PushConfig _pushConfig;
 
     [Header("Gravity")]
     [SerializeField] float _gravityScale = 1f;
@@ -101,16 +103,14 @@ public class PlayerController : NetworkBehaviour {
 
     private bool _isRunning = false; // Variable to track running state
 
-    PushingBehavior _pushingBehavior;
+    PlayerPush _playerPush;
     bool _isPushing = false;
 
     private void Start() {
         DontDestroyOnLoad(gameObject);
         _rigidbody = GetComponent<Rigidbody>();
         _capsuleCollider = GetComponent<CapsuleCollider>();
-
-        _pushingBehavior = GetComponent<PushingBehavior>();
-        _pushingBehavior._onReleasing += OnGrabForceRelease;
+        _playerPush = new PlayerPush(new RuntimePushConfig(_pushConfig), transform, _rigidbody);
 
         if(isLocalPlayer) {
 
@@ -197,8 +197,8 @@ public class PlayerController : NetworkBehaviour {
             CMD_ChooseModel(isServer);
         }
 
-        if(_isPushing) {
-            _pushingBehavior.WhilePushing(_movementAction.ReadValue<Vector2>());
+        if(_playerPush._isPushing) {
+            _playerPush.WhilePushing(_movementAction.ReadValue<Vector2>());
             return;
         }
 
@@ -209,6 +209,8 @@ public class PlayerController : NetworkBehaviour {
         HandleTimers();
 
         Movement();
+
+        ClimbCheck();
     }
 
     private void FixedUpdate() {
@@ -381,18 +383,69 @@ public class PlayerController : NetworkBehaviour {
         _wasGroundedLastFrame = _isGrounded;
     }
 
-    void GrabCheck() {
-        Vector2 movementInput = _movementAction.ReadValue<Vector2>();
-
-        _rigidbody.velocity = movementInput.normalized;
-    }
-
     private void OnRunPerformed(InputAction.CallbackContext context) {
         _isRunning = true;
     }
 
     private void OnRunCanceled(InputAction.CallbackContext context) {
         _isRunning = false;
+    }
+
+    void ClimbCheck() {
+        if(_isJumping)
+            return;
+
+        Collider[] climbableObject =
+            Physics.OverlapBox(
+                transform.position +
+                    (transform.forward * _climbMaxDistance + transform.forward * _playerWidth) / 2f +
+                    (Vector3.up * _climbMaxHeight + Vector3.up * (transform.position.y - _playerHeight / 2f)) / 2f,
+                new Vector3(_playerWidth, _climbMaxHeight / 2f, _climbMaxDistance / 2f),
+                transform.rotation);
+
+        Collider[] notClimbableObject =
+            Physics.OverlapBox(
+                transform.position +
+                    (transform.forward * _climbMaxDistance + transform.forward * _playerWidth) / 2f +
+                    (Vector3.up * _climbMaxHeight + Vector3.up * (transform.position.y - _playerHeight / 2f)) / 2f + Vector3.up * _climbMaxHeight,
+                new Vector3(_playerWidth, _climbMaxHeight / 2f, _climbMaxDistance / 2f),
+                transform.rotation
+                );
+
+        if(climbableObject.Length > 0) {
+            if(notClimbableObject.Length > 0 && climbableObject[0] == notClimbableObject[0]) {
+                return;
+            }
+            else {
+                RaycastHit hit;
+                if(Physics.Raycast(
+                    transform.position + transform.forward * (_playerWidth + 0.05f),
+                    transform.forward,
+                    out hit,
+                    _climbMaxDistance)) {
+                    Debug.Log("Middle Climb Detected");
+                    return;
+                }
+
+                if(Physics.Raycast(
+                    transform.position + transform.forward * (_playerWidth + 0.05f) + -transform.right * _playerWidth,
+                    transform.forward,
+                    out hit,
+                    _climbMaxDistance)) {
+                    Debug.Log("Left Climb Detected");
+                    return;
+                }
+
+                if(Physics.Raycast(
+                    transform.position + transform.forward * (_playerWidth + 0.05f) + transform.right * _playerWidth,
+                    transform.forward,
+                    out hit,
+                    _climbMaxDistance)) {
+                    Debug.Log("Right Climb Detected");
+                    return;
+                }
+            }
+        }
     }
 
     private void OnDrawGizmosSelected() {
@@ -404,11 +457,8 @@ public class PlayerController : NetworkBehaviour {
             float maxDistance = (_capsuleCollider.height / 2 - _capsuleCollider.radius) + 0.1f;
             Gizmos.DrawWireSphere(origin + Vector3.down * maxDistance, radius);
         }
-        if(_grabBoxDetectionPostion != null) {
-            Gizmos.matrix = _grabBoxDetectionPostion.localToWorldMatrix;
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(Vector3.zero, _grabBoxDetectionDimension);
-        }
+
+        _playerPush.DrawGizmos();
     }
 
     private void OnRespawn(InputAction.CallbackContext context) {
@@ -422,13 +472,9 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void OnGrab(InputAction.CallbackContext context) {
-        _isPushing =_pushingBehavior.Grab();
+        _playerPush.Grab();
         if(!isServer)
             CMD_Grab();
-    }
-
-    void OnGrabForceRelease() {
-        _isPushing = false;
     }
 
     [Command]
@@ -450,10 +496,13 @@ public class PlayerController : NetworkBehaviour {
             capsuleCollider.height = _BoySize.y;
         }
         _playerBodySelected = true;
+
+        _playerWidth = capsuleCollider.radius;
+        _playerHeight = capsuleCollider.height;
     }
 
     [Command]
     void CMD_Grab() {
-        _pushingBehavior.Grab();
+        _playerPush.Grab();
     }
 }
