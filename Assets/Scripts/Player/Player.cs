@@ -7,21 +7,27 @@ public class Player : MonoBehaviour
     [SerializeField] private MovementConfig movementConfigAsset;
     [SerializeField] private JumpConfig jumpConfigAsset;
     [SerializeField] private CharacterConfig characterConfig;
+    [SerializeField] private RopeConfig ropeConfigAsset;
 
     [Header("Settings")]
     [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private LayerMask beamLayer;
+    [SerializeField] private LayerMask ropeLayer;
     [SerializeField] private Transform cameraPosition;
 
     [Header("Runtime Configuration")]
     [SerializeField] private RuntimeMovementConfig RuntimeMovementConfig;
     [SerializeField] private RuntimeJumpConfig RuntimejumpConfig;
+    [SerializeField] private RuntimeRopeConfig RuntimeRopeConfig;
 
     private PlayerInputHandler _input;
     private PlayerMovement _movement;
     private PlayerJump _jump;
+    private RopeSystem _rope;
     private GroundDetector _groundDetector;
     private CharacterModel _characterModel;
     private Vector3 _spawnPosition;
+    private Transform _nearestRope;
 
     private void Awake()
     {
@@ -41,13 +47,15 @@ public class Player : MonoBehaviour
     {
         RuntimeMovementConfig = new RuntimeMovementConfig(movementConfigAsset);
         RuntimejumpConfig = new RuntimeJumpConfig(jumpConfigAsset);
+        RuntimeRopeConfig = new RuntimeRopeConfig(ropeConfigAsset);
+
         var rb = GetComponent<Rigidbody>();
         var capsuleCollider = GetComponent<CapsuleCollider>();
 
         _input = new PlayerInputHandler();
         _movement = new PlayerMovement(rb, RuntimeMovementConfig,RuntimejumpConfig);
         _jump = new PlayerJump(rb, RuntimejumpConfig, _movement);
-        _groundDetector = new GroundDetector(capsuleCollider, groundLayer);
+        _groundDetector = new GroundDetector(capsuleCollider, groundLayer,beamLayer);
         _characterModel = new CharacterModel(capsuleCollider, characterConfig,transform);
 
         _spawnPosition = transform.position;
@@ -80,12 +88,10 @@ public class Player : MonoBehaviour
 
         var inputData = _input.GetInput();
         bool isGrounded = _groundDetector.CheckGround();
+        bool isOnBeam = (_groundDetector as GroundDetector).IsOnBeam;
 
-        // Log input details and grounded state
-        Debug.Log($"Update: IsRunning: {inputData.IsRunning}, Movement Direction: {inputData.MovementDirection}, Is Grounded: {isGrounded}");
-
-        _movement.UpdateMovement(inputData, isGrounded);
-        _jump.UpdateJump(inputData, isGrounded, _movement.LastInputDirection,_movement.WasAtRunSpeed);
+        _movement.UpdateMovement(inputData, isGrounded,isOnBeam);
+        _jump.UpdateJump(inputData, isGrounded, _movement.LastInputDirection, _movement.WasAtRunSpeed, isOnBeam);
 
         if (inputData.IsRespawnPressed)
         {

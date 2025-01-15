@@ -8,6 +8,7 @@ public class PlayerInputHandler:IPlayerInput
     private readonly InputAction _jumpAction;
     private readonly InputAction _runAction;
     private readonly InputAction _respawnAction;
+    private readonly InputAction _grabAction;
     private bool _isEnabled;
 
     public bool IsEnabled => _isEnabled;
@@ -20,6 +21,7 @@ public class PlayerInputHandler:IPlayerInput
         _jumpAction = _playerControl.Player.Jump;
         _runAction = _playerControl.Player.Run;
         _respawnAction = _playerControl.Player.Respawn;
+        _grabAction = _playerControl.Player.Grab;
 
         Enable(); // Enable inputs by default
     }
@@ -32,7 +34,8 @@ public class PlayerInputHandler:IPlayerInput
             _jumpAction.IsPressed(),
             _jumpAction.WasReleasedThisFrame(),
             _runAction.IsPressed(),
-            _respawnAction.WasPressedThisFrame()
+            _respawnAction.WasPressedThisFrame(),
+            _grabAction.IsPressed()
         );
 
         return input;

@@ -10,6 +10,8 @@ public class JumpConfig : ScriptableObject
     public float desiredJumpLengthRun = 7f;
     public float upwardMovementMultiplier = 1f;
     public float downwardMovementMultiplier = 4f;
+    public float walkAirVelocityMultiplier = 0.8f; // Added
+    public float runAirVelocityMultiplier = 1.2f;  // Added
     public float jumpCutOff = 2f;
     public float fallSpeedLimit = 20f;
     public int maxAirJumps = 0;
