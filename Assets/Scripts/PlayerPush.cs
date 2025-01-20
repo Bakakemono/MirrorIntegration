@@ -2,14 +2,14 @@ using System;
 using UnityEngine;
 
 public class PlayerPush {
-    private Transform _transform;
+    private Transform _playerTransform;
     private Rigidbody _rigidbody;
 
     RuntimePushConfig _config;
-    
+
     Vector3 _pushingDirection = Vector3.zero;
     PushableObject _currentPushedObject;
-    
+
     bool isPushing = false;
     public bool _isPushing {
         get {
@@ -24,7 +24,7 @@ public class PlayerPush {
 
     public PlayerPush(RuntimePushConfig config, Transform transform, Rigidbody rigidBody) {
         _config = config;
-        _transform = transform;
+        _playerTransform = transform;
         _rigidbody = rigidBody;
     }
 
@@ -34,30 +34,30 @@ public class PlayerPush {
     public void Grab() {
         if(isPushing) {
             isPushing = false;
-            _currentPushedObject.StopPushPull();
+            _currentPushedObject.StopPushPull(_playerTransform);
             return;
         }
         else {
             Collider[] _detectedObjects =
                 Physics.OverlapBox(
-                    _transform.TransformPoint(_config._grabBoxDetectionPostion),
+                    _playerTransform.TransformPoint(_config._grabBoxDetectionPostion),
                     _config._grabBoxDetectionDimension / 2f,
-                    _transform.rotation,
+                    _playerTransform.rotation,
                     _config._pushableObjectLayerMask
                     );
 
             if(_detectedObjects.Length > 0) {
                 _currentPushedObject = _detectedObjects[0].GetComponent<PushableObject>();
-                _currentPushedObject.StartPushPull(_transform.gameObject);
+                _currentPushedObject.StartPushPull(_playerTransform);
                 _pushingSpeed = _currentPushedObject.GetPushingSpeed();
                 _pullingSpeed = _currentPushedObject.GetPullingSpeed();
 
                 // Register current elevation for fall detection.
                 _pushedObjectHeight = _currentPushedObject.transform.position.y;
-                _heightWhenPushing = _transform.position.y;
+                _heightWhenPushing = _playerTransform.position.y;
 
                 // Determine the direction in which the player is going to push.
-                Vector3 localPos = _currentPushedObject.transform.InverseTransformPoint(_transform.position);
+                Vector3 localPos = _currentPushedObject.transform.InverseTransformPoint(_playerTransform.position);
 
                 if(MathF.Abs(localPos.x) > Mathf.Abs(localPos.z)) {
 
@@ -80,7 +80,7 @@ public class PlayerPush {
                     }
                 }
 
-                _transform.rotation = Quaternion.LookRotation(_pushingDirection);
+                _playerTransform.rotation = Quaternion.LookRotation(_pushingDirection);
                 isPushing = true;
                 return;
             }
@@ -89,14 +89,23 @@ public class PlayerPush {
     }
 
     public void WhilePushing(Vector2 movementInput) {
+        if(_currentPushedObject == null) {
+            isPushing = false;
+            return;
+        }
+
+        isPushing = _currentPushedObject.IsPushable();
+
         if(!isPushing)
             return;
 
-        if((_transform.position.y < _heightWhenPushing - 0.1f || _transform.position.y > _heightWhenPushing + 0.1f) ||
+
+
+        if((_playerTransform.position.y < _heightWhenPushing - 0.1f || _playerTransform.position.y > _heightWhenPushing + 0.1f) ||
             (_currentPushedObject.transform.position.y < _pushedObjectHeight - 0.1f || _currentPushedObject.transform.position.y > _pushedObjectHeight + 0.1f)
             ) {
-            isPushing = false;
-            _currentPushedObject.StopPushPull();
+            _currentPushedObject.StopPushPull(_playerTransform);
+            isPushing = _currentPushedObject.IsPushable();
             return;
         }
 
@@ -111,7 +120,7 @@ public class PlayerPush {
             _rigidbody.velocity = projectedDirection * _pullingSpeed + Vector3.up * _rigidbody.velocity.y;
         }
 
-        _transform.rotation = Quaternion.LookRotation(_pushingDirection);
+        _playerTransform.rotation = Quaternion.LookRotation(_pushingDirection);
     }
 
     public PushableObject GetPushedObject() {
@@ -122,13 +131,13 @@ public class PlayerPush {
         if(_config._grabBoxDetectionPostion == null)
             return;
 
-        Gizmos.matrix = _transform.localToWorldMatrix;
+        Gizmos.matrix = _playerTransform.localToWorldMatrix;
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(
             _config._grabBoxDetectionPostion,
             _config._grabBoxDetectionDimension
             );
 
-        Gizmos.matrix = _transform.worldToLocalMatrix;
+        Gizmos.matrix = _playerTransform.worldToLocalMatrix;
     }
 }
