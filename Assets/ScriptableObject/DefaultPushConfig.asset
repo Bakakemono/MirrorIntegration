@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aee102e7d174f5642905c4259e6531e3, type: 3}
   m_Name: DefaultPushConfig
   m_EditorClassIdentifier: 
-  _grabBoxDetectionPostion: {x: 0, y: 0, z: 0.6}
+  _grabBoxDetectionPostion: {x: 0, y: 1, z: 1}
   _grabBoxDetectionDimension: {x: 0.3, y: 0.3, z: 0.15}
   _pushableObjectLayerMask:
     serializedVersion: 2

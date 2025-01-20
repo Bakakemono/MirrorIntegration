@@ -322,15 +322,15 @@ public class HLPlayerController : MonoBehaviour
     {
         float extraHeight = 0.1f;
         float radius = _capsuleCollider.radius * 0.9f;
+        radius = 0.2f;
         Vector3 origin = transform.position + Vector3.up * (_capsuleCollider.height / 2 - _capsuleCollider.radius);
         float maxDistance = (_capsuleCollider.height / 2 - _capsuleCollider.radius) + extraHeight;
 
         // Ground check
-        RaycastHit hit;
-        _isGrounded = Physics.SphereCast(origin, radius, Vector3.down, out hit, maxDistance, _groundLayer);
+        _isGrounded = Physics.OverlapSphere(origin, radius, _groundLayer).Length > 0;
 
         // Beam check
-        _isOnBeam = Physics.SphereCast(origin, radius, Vector3.down, out hit, maxDistance, _beamLayer);
+        _isOnBeam = Physics.OverlapSphere(origin, radius, _beamLayer).Length > 0;
 
         bool isOnSurface = _isGrounded || _isOnBeam;
         if (isOnSurface && !_wasGroundedLastFrame)
@@ -364,6 +364,7 @@ public class HLPlayerController : MonoBehaviour
             _BoyModel.SetActive(false);
             _capsuleCollider.radius = _girlSize.x / 2f;
             _capsuleCollider.height = _girlSize.y;
+            _capsuleCollider.center = new Vector3(0, _girlSize.y / 2f, 0);
             _isGirl = false;
         }
         else if (_isBoy)
@@ -372,6 +373,7 @@ public class HLPlayerController : MonoBehaviour
             _GirlModel.SetActive(false);
             _capsuleCollider.radius = _BoySize.x / 2f;
             _capsuleCollider.height = _BoySize.y;
+            _capsuleCollider.center = new Vector3(0, _BoySize.y / 2f, 0);
             _isBoy = false;
         }
     }
