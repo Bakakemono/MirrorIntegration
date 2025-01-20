@@ -322,8 +322,7 @@ public class HLPlayerController : MonoBehaviour
     {
         float extraHeight = 0.1f;
         float radius = _capsuleCollider.radius * 0.9f;
-        radius = 0.2f;
-        Vector3 origin = transform.position + Vector3.up * (_capsuleCollider.height / 2 - _capsuleCollider.radius);
+        Vector3 origin = transform.position;
         float maxDistance = (_capsuleCollider.height / 2 - _capsuleCollider.radius) + extraHeight;
 
         // Ground check
