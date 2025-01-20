@@ -8,7 +8,7 @@ using UnityEngine;
 
 // Force the object to have a Rigidbody
 [RequireComponent(typeof(Rigidbody))]
-public class PushableObject : NetworkBehaviour {
+public class PushableObject : MonoBehaviour {
     [Header("Pushable Object Settings")]
     [SerializeField] private float pushForce = 100f; // Increase this force if the object is not moving as expected
     private Rigidbody _rigidbody;
@@ -22,7 +22,7 @@ public class PushableObject : NetworkBehaviour {
 
     [SerializeField] bool _twoPlayerNeeded = false;
 
-    [SyncVar] bool _canBePush = false;
+    bool _canBePush = false;
 
     private void Awake() {
         _rigidbody = GetComponent<Rigidbody>();

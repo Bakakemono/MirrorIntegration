@@ -104,7 +104,6 @@ public class PlayerController : NetworkBehaviour {
     private bool _isRunning = false; // Variable to track running state
 
     PlayerPush _playerPush;
-    bool _isPushing = false;
 
     private void Start() {
         DontDestroyOnLoad(gameObject);
