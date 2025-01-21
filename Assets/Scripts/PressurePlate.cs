@@ -26,8 +26,9 @@ public class PressurePlate : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"Trigger Enter by: {other.tag}");
-    if (other.CompareTag("Player") || other.CompareTag("PushableObject"))
+        Debug.Log($"Trigger Enter by Tag: {other.tag}");
+        Debug.Log($"Trigger Enter by Layer: {other.gameObject.layer.ToString()}");
+        if (other.CompareTag("Player") || other.gameObject.layer == 6)
     {
         Debug.Log("Pressing plate");
         PressPlate();
@@ -36,7 +37,7 @@ public class PressurePlate : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if ((other.CompareTag("Player") || other.CompareTag("PushableObject")) && !stayPressed)
+        if ((other.CompareTag("Player") || other.gameObject.layer == 6) && !stayPressed)
         {
             ReleasePlate();
         }

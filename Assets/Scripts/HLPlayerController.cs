@@ -56,6 +56,7 @@ public class HLPlayerController : MonoBehaviour
     bool _isGrounded = false;
     bool _pressingJump = false;
     bool _wasGroundedLastFrame = false;
+    Vector2 _lastMoveDirection = Vector2.right;
 
     float _gravity;
     float _jumpVelocity;
@@ -189,6 +190,14 @@ public class HLPlayerController : MonoBehaviour
     private void Movement()
     {
         Vector2 movementInput = _movementAction.ReadValue<Vector2>();
+        _lastMoveDirection = movementInput != Vector2.zero ? movementInput.normalized : _lastMoveDirection;
+
+        transform.rotation =
+            Quaternion.Lerp(
+                transform.rotation,
+                Quaternion.LookRotation(new Vector3(_lastMoveDirection.x, 0f, _lastMoveDirection.y), Vector3.up),
+                Time.deltaTime * 10f
+                );
         Vector3 inputDirection = new Vector3(movementInput.x, 0, movementInput.y).normalized;
         float movementInputMagnitude = movementInput.magnitude;
 
