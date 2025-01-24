@@ -1,3 +1,4 @@
+using Steamworks;
 using System;
 using UnityEngine;
 
@@ -109,18 +110,29 @@ public class PlayerPush {
             return;
         }
 
+        _playerTransform.rotation = Quaternion.LookRotation(_pushingDirection);
+
+        if(movementInput == Vector2.zero)
+            return;
+
         Vector3 convertedMovenentInput = new Vector3(movementInput.x, 0f, movementInput.y).normalized;
 
-        Vector3 projectedDirection = Vector3.Project(convertedMovenentInput, _pushingDirection).normalized;
+        Vector3 forwardProjectedDir = Vector3.Project(convertedMovenentInput, _pushingDirection);
 
-        if(projectedDirection == _pushingDirection) {
-            _rigidbody.velocity = projectedDirection * _pushingSpeed + Vector3.up * _rigidbody.velocity.y;
+        Vector3 sideProjectedDrection = Vector3.Project(convertedMovenentInput, new Vector3(_pushingDirection.z, 0f, -_pushingDirection.x));
+
+
+        if(forwardProjectedDir.magnitude > sideProjectedDrection.magnitude) {
+            if(forwardProjectedDir == _pushingDirection) {
+                _rigidbody.velocity = forwardProjectedDir.normalized * _pushingSpeed + Vector3.up * _rigidbody.velocity.y;
+            }
+            else {
+                _rigidbody.velocity = forwardProjectedDir.normalized * _pullingSpeed + Vector3.up * _rigidbody.velocity.y;
+            }
         }
         else {
-            _rigidbody.velocity = projectedDirection * _pullingSpeed + Vector3.up * _rigidbody.velocity.y;
+            _rigidbody.velocity = sideProjectedDrection.normalized * _pullingSpeed + Vector3.up * _rigidbody.velocity.y;
         }
-
-        _playerTransform.rotation = Quaternion.LookRotation(_pushingDirection);
     }
 
     public PushableObject GetPushedObject() {

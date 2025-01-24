@@ -12,6 +12,7 @@ public class PushableObject : MonoBehaviour {
     [Header("Pushable Object Settings")]
     [SerializeField] private float pushForce = 100f; // Increase this force if the object is not moving as expected
     private Rigidbody _rigidbody;
+    [SerializeField] LayerMask _groundLayer;
 
     [SerializeField, Range(0.1f, 10f)] float _pushSpeed = 1.0f;
     [SerializeField, Range(0.1f, 10f)] float _pullSpeed = 1.0f;
@@ -36,23 +37,10 @@ public class PushableObject : MonoBehaviour {
         transform.position = new Vector3(newPos.x, transform.position.y, newPos.z);
     }
 
-    // TO REMOVE ------
-    /// <summary>
-    /// Starts the push or pull on the object.
-    /// </summary>
-    /// <param name="direction">The direction to push or pull the object.</param>
-    public void StartPushPull(Vector3 direction) {
-    }
-    // ----------------
-
     /// <summary>
     /// Stops the push or pull.
     /// </summary>
     public void StopPushPull(Transform pushingPlayerTransform) {
-        // TO REMOVE ------
-        _rigidbody.velocity = Vector3.zero; // Stop the object when push/pull is deactivated
-        // ----------------
-
         if(_playerTransform == pushingPlayerTransform) {
             _playerTransform = _secondPlayerTransform;
             if(_playerTransform != null)
@@ -93,7 +81,24 @@ public class PushableObject : MonoBehaviour {
     }
 
     public Vector3 GetPushDirection() {
-        return transform.forward;
+        RaycastHit hit;
+        Physics.Raycast(transform.position, Vector3.down, out hit, 10f, _groundLayer);
+
+        Vector3 perpendicularToNormal = new Vector3(hit.normal.x, -hit.normal.z, hit.normal.y);
+
+        Vector3 projectedForward = Vector3.Project(perpendicularToNormal, transform.forward);
+        Vector3 projectedVRight = Vector3.Project(perpendicularToNormal, transform.right);
+        Vector3 projectedUp = Vector3.Project(perpendicularToNormal, transform.up);
+        
+        if(projectedForward.sqrMagnitude > projectedVRight.sqrMagnitude && projectedForward.sqrMagnitude > projectedUp.sqrMagnitude) {
+            return transform.forward;
+        }
+        else if(projectedVRight.sqrMagnitude > projectedForward.sqrMagnitude && projectedVRight.sqrMagnitude > projectedUp.sqrMagnitude) {
+            return transform.right;
+        }
+        else {
+            return transform.up;
+        }
     }
     
     public bool IsPushable() {
