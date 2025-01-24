@@ -10,6 +10,7 @@ public class PlayerPush {
 
     Vector3 _pushingDirection = Vector3.zero;
     PushableObject _currentPushedObject;
+    Vector3 _objRelativePos = Vector3.zero;
 
     bool isPushing = false;
     public bool _isPushing {
@@ -56,6 +57,7 @@ public class PlayerPush {
                 // Register current elevation for fall detection.
                 _pushedObjectHeight = _currentPushedObject.transform.position.y;
                 _heightWhenPushing = _playerTransform.position.y;
+                _objRelativePos = _currentPushedObject.transform.position - _playerTransform.position;
 
                 // Determine the direction in which the player is going to push.
                 Vector3 localPos = _currentPushedObject.transform.InverseTransformPoint(_playerTransform.position);
@@ -102,9 +104,8 @@ public class PlayerPush {
 
 
 
-        if((_playerTransform.position.y < _heightWhenPushing - 0.1f || _playerTransform.position.y > _heightWhenPushing + 0.1f) ||
-            (_currentPushedObject.transform.position.y < _pushedObjectHeight - 0.1f || _currentPushedObject.transform.position.y > _pushedObjectHeight + 0.1f)
-            ) {
+        if(_playerTransform.position.y + _objRelativePos.y < _currentPushedObject.transform.position.y - 0.1f ||
+            _playerTransform.position.y + _objRelativePos.y > _currentPushedObject.transform.position.y + 0.1f) {
             _currentPushedObject.StopPushPull(_playerTransform);
             isPushing = _currentPushedObject.IsPushable();
             return;
@@ -114,13 +115,13 @@ public class PlayerPush {
 
         if(movementInput == Vector2.zero)
             return;
-
         Vector3 convertedMovenentInput = new Vector3(movementInput.x, 0f, movementInput.y).normalized;
+
+        /* ////////////// OLD Version /////////////////
 
         Vector3 forwardProjectedDir = Vector3.Project(convertedMovenentInput, _pushingDirection);
 
         Vector3 sideProjectedDrection = Vector3.Project(convertedMovenentInput, new Vector3(_pushingDirection.z, 0f, -_pushingDirection.x));
-
 
         if(forwardProjectedDir.magnitude > sideProjectedDrection.magnitude) {
             if(forwardProjectedDir == _pushingDirection) {
@@ -133,6 +134,9 @@ public class PlayerPush {
         else {
             _rigidbody.velocity = sideProjectedDrection.normalized * _pullingSpeed + Vector3.up * _rigidbody.velocity.y;
         }
+        //////////////////////// */
+
+        _rigidbody.velocity = convertedMovenentInput.normalized * _pushingSpeed + Vector3.up * _rigidbody.velocity.y;
     }
 
     public PushableObject GetPushedObject() {

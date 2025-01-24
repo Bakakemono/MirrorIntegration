@@ -20,6 +20,7 @@ public class PushableObject : MonoBehaviour {
 
     Transform _secondPlayerTransform;
     Vector3 _relativePosPlayer;
+    Quaternion _rotationWhenPushed;
 
     [SerializeField] bool _twoPlayerNeeded = false;
 
@@ -35,6 +36,7 @@ public class PushableObject : MonoBehaviour {
 
         Vector3 newPos = _relativePosPlayer + _playerTransform.position;
         transform.position = new Vector3(newPos.x, transform.position.y, newPos.z);
+        transform.rotation = _rotationWhenPushed;
     }
 
     /// <summary>
@@ -60,6 +62,7 @@ public class PushableObject : MonoBehaviour {
             _relativePosPlayer = transform.position - _playerTransform.position;
             _rigidbody.mass = 1.0f;
             _canBePush = !_twoPlayerNeeded;
+            _rotationWhenPushed = transform.rotation;
             return true;
         }
         else if(_playerTransform != pushingPlayerTransform && _twoPlayerNeeded) {
@@ -91,13 +94,13 @@ public class PushableObject : MonoBehaviour {
         Vector3 projectedUp = Vector3.Project(perpendicularToNormal, transform.up);
         
         if(projectedForward.sqrMagnitude > projectedVRight.sqrMagnitude && projectedForward.sqrMagnitude > projectedUp.sqrMagnitude) {
-            return transform.forward;
+            return projectedForward.normalized;
         }
         else if(projectedVRight.sqrMagnitude > projectedForward.sqrMagnitude && projectedVRight.sqrMagnitude > projectedUp.sqrMagnitude) {
-            return transform.right;
+            return projectedVRight.normalized;
         }
         else {
-            return transform.up;
+            return projectedUp.normalized;
         }
     }
     
