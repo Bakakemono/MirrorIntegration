@@ -10,12 +10,10 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PushableObject : MonoBehaviour {
     [Header("Pushable Object Settings")]
-    [SerializeField] private float pushForce = 100f; // Increase this force if the object is not moving as expected
     private Rigidbody _rigidbody;
     [SerializeField] LayerMask _groundLayer;
 
     [SerializeField, Range(0.1f, 10f)] float _pushSpeed = 1.0f;
-    [SerializeField, Range(0.1f, 10f)] float _pullSpeed = 1.0f;
     Transform _playerTransform;
 
     Transform _secondPlayerTransform;
@@ -73,10 +71,6 @@ public class PushableObject : MonoBehaviour {
         else {
             return false;
         }
-    }
-
-    public float GetPullingSpeed() {
-        return _pullSpeed;
     }
 
     public float GetPushingSpeed() {
