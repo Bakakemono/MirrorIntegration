@@ -1,6 +1,8 @@
+using Org.BouncyCastle.Asn1.Esf;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Events;
 
 public class HLPlayerController : MonoBehaviour
 {
@@ -64,7 +66,9 @@ public class HLPlayerController : MonoBehaviour
     [Header("Surface Detection")]
     [SerializeField] private LayerMask _groundLayer;
     [SerializeField] private LayerMask _beamLayer;
+    [SerializeField] private LayerMask _beamLayerZ;
     private bool _isOnBeam;
+    private bool _isOnBeamZ;  // Add this
 
     [SerializeField] Transform _cameraPosition;
     Rigidbody _rigidbody;
@@ -207,6 +211,11 @@ public class HLPlayerController : MonoBehaviour
             HandleBeamMovement(inputDirection);
             return;
         }
+        if (_isOnBeamZ)
+        {
+            HandleBeamMovementZ(inputDirection);
+            return;
+        }
 
         HandleNormalMovement(inputDirection, movementInputMagnitude);
         HandleJump();
@@ -220,6 +229,17 @@ public class HLPlayerController : MonoBehaviour
         Vector3 beamMovement = new Vector3(inputDirection.x, 0, 0);
         _currentSpeed = _walkSpeed * 0.6f;
         _rigidbody.velocity = new Vector3(beamMovement.x * _currentSpeed, _rigidbody.velocity.y, 0);
+    }
+
+    private void HandleBeamMovementZ(Vector3 inputDirection)
+    {
+        // Only use Z component, ignore X and Y inputs completely
+        _currentSpeed = _walkSpeed * 0.6f;
+        _rigidbody.velocity = new Vector3(
+            0, // Force X to 0
+            _rigidbody.velocity.y,
+            inputDirection.z * _currentSpeed // Only use Z movement
+        );
     }
 
     private void HandleNormalMovement(Vector3 inputDirection, float movementInputMagnitude)
@@ -339,6 +359,7 @@ public class HLPlayerController : MonoBehaviour
 
         // Beam check
         _isOnBeam = Physics.OverlapSphere(origin, radius, _beamLayer).Length > 0;
+        _isOnBeamZ = Physics.OverlapSphere(origin, radius, _beamLayerZ).Length > 0;
 
         bool isOnSurface = _isGrounded || _isOnBeam;
         if (isOnSurface && !_wasGroundedLastFrame)
