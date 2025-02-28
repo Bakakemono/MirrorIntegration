@@ -1,44 +1,57 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class OrbitButton : MonoBehaviour
 {
     [Header("Button Settings")]
-    [SerializeField] private PlanetOrbit[] controlledPlanets;  // Array of planets this button controls
+    [SerializeField] private List<PlanetOrbit> controlledPlanets = new List<PlanetOrbit>();
     [SerializeField] private bool startActive = true;
 
-    private bool isPressed = false;
+    private bool playerInRange = false;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") && !isPressed)
+        if (other.CompareTag("Player"))
         {
-            isPressed = true;
-            TogglePlanets();
+            playerInRange = true;
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player") && isPressed)
+        if (other.CompareTag("Player"))
         {
-            isPressed = false;
+            playerInRange = false;
+        }
+    }
+
+    public void HandleInteract(bool isInteractPressed)
+    {
+        if (playerInRange && isInteractPressed)
+        {
+            TogglePlanets();
         }
     }
 
     private void TogglePlanets()
     {
-        foreach (var planet in controlledPlanets)
+        // Check the first planet to determine the current state
+        if (controlledPlanets.Count > 0 && controlledPlanets[0] != null)
         {
-            if (planet != null)
+            bool shouldOrbit = !controlledPlanets[0].IsAtFullSpeed;
+
+            foreach (var planet in controlledPlanets)
             {
-                planet.SetOrbiting(!planet.IsOrbiting);  // Toggle the orbit state
+                if (planet != null)
+                {
+                    planet.SetOrbiting(shouldOrbit);
+                }
             }
         }
     }
 
     private void Start()
     {
-        // Set initial state
         foreach (var planet in controlledPlanets)
         {
             if (planet != null)
@@ -46,5 +59,12 @@ public class OrbitButton : MonoBehaviour
                 planet.SetOrbiting(startActive);
             }
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Visualization for the interaction area
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, 1f);
     }
 }
