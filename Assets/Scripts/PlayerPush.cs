@@ -8,7 +8,6 @@ public class PlayerPush {
 
     RuntimePushConfig _config;
 
-    Vector3 _pushingDirection = Vector3.zero;
     PushableObject _currentPushedObject;
     Vector3 _objRelativePos = Vector3.zero;
 
@@ -19,10 +18,7 @@ public class PlayerPush {
         }
     }
     float _pushingSpeed = 0f;
-    float _pullingSpeed = 0f;
 
-    float _heightWhenPushing = 0f;
-    float _pushedObjectHeight = 0f;
 
     public PlayerPush(RuntimePushConfig config, Transform transform, Rigidbody rigidBody) {
         _config = config;
@@ -52,38 +48,11 @@ public class PlayerPush {
                 _currentPushedObject = _detectedObjects[0].GetComponent<PushableObject>();
                 _currentPushedObject.StartPushPull(_playerTransform);
                 _pushingSpeed = _currentPushedObject.GetPushingSpeed();
-                _pullingSpeed = _currentPushedObject.GetPullingSpeed();
 
-                // Register current elevation for fall detection.
-                _pushedObjectHeight = _currentPushedObject.transform.position.y;
-                _heightWhenPushing = _playerTransform.position.y;
+                // Register current relative position.
                 _objRelativePos = _currentPushedObject.transform.position - _playerTransform.position;
 
-                // Determine the direction in which the player is going to push.
-                Vector3 localPos = _currentPushedObject.transform.InverseTransformPoint(_playerTransform.position);
-
-                if(MathF.Abs(localPos.x) > Mathf.Abs(localPos.z)) {
-
-                    Vector3 pushingDirection = _currentPushedObject.GetPushDirection();
-
-                    if(localPos.x < 0) {
-                        _pushingDirection = new Vector3(pushingDirection.z, 0f, -pushingDirection.x);
-                    }
-                    else {
-                        _pushingDirection = new Vector3(-pushingDirection.z, 0f, pushingDirection.x);
-                    }
-                }
-                else {
-                    if(localPos.z < 0) {
-                        _pushingDirection = _currentPushedObject.GetPushDirection();
-                    }
-                    else {
-                        _pushingDirection = _currentPushedObject.GetPushDirection() * -1f;
-
-                    }
-                }
-
-                _playerTransform.rotation = Quaternion.LookRotation(_pushingDirection);
+                //_playerTransform.rotation = Quaternion.LookRotation(_pushingDirection);
                 isPushing = true;
                 return;
             }
@@ -111,30 +80,7 @@ public class PlayerPush {
             return;
         }
 
-        _playerTransform.rotation = Quaternion.LookRotation(_pushingDirection);
-
-        if(movementInput == Vector2.zero)
-            return;
         Vector3 convertedMovenentInput = new Vector3(movementInput.x, 0f, movementInput.y).normalized;
-
-        /* ////////////// OLD Version /////////////////
-
-        Vector3 forwardProjectedDir = Vector3.Project(convertedMovenentInput, _pushingDirection);
-
-        Vector3 sideProjectedDrection = Vector3.Project(convertedMovenentInput, new Vector3(_pushingDirection.z, 0f, -_pushingDirection.x));
-
-        if(forwardProjectedDir.magnitude > sideProjectedDrection.magnitude) {
-            if(forwardProjectedDir == _pushingDirection) {
-                _rigidbody.velocity = forwardProjectedDir.normalized * _pushingSpeed + Vector3.up * _rigidbody.velocity.y;
-            }
-            else {
-                _rigidbody.velocity = forwardProjectedDir.normalized * _pullingSpeed + Vector3.up * _rigidbody.velocity.y;
-            }
-        }
-        else {
-            _rigidbody.velocity = sideProjectedDrection.normalized * _pullingSpeed + Vector3.up * _rigidbody.velocity.y;
-        }
-        //////////////////////// */
 
         _rigidbody.velocity = convertedMovenentInput.normalized * _pushingSpeed + Vector3.up * _rigidbody.velocity.y;
     }
