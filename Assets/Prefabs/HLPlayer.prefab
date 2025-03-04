@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &4483543981118770264
+--- !u!1 &1151874930027848898
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,29 +8,81 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8906524014230344564}
+  - component: {fileID: 2509958108483013322}
+  - component: {fileID: 2084332820348351491}
+  - component: {fileID: 3251397351812349017}
   m_Layer: 0
-  m_Name: CameraPosition
+  m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8906524014230344564
+--- !u!4 &2509958108483013322
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4483543981118770264}
+  m_GameObject: {fileID: 1151874930027848898}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.13048594, y: -0, z: -0, w: 0.9914502}
-  m_LocalPosition: {x: 0, y: 2.079, z: -5.496}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.988, z: 0.501}
+  m_LocalScale: {x: 0.2044735, y: 0.2044735, z: 0.2044735}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4769552211649601307}
-  m_LocalEulerAnglesHint: {x: 14.995, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &2084332820348351491
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151874930027848898}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &3251397351812349017
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151874930027848898}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &7275837093516337807
 GameObject:
   m_ObjectHideFlags: 0
@@ -45,7 +97,7 @@ GameObject:
   - component: {fileID: 1658337100854523952}
   m_Layer: 0
   m_Name: HLPlayer
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -65,7 +117,7 @@ Transform:
   m_Children:
   - {fileID: 7962238821953674308}
   - {fileID: 3222202498343168846}
-  - {fileID: 8906524014230344564}
+  - {fileID: 2509958108483013322}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &3158380615664694601
@@ -75,7 +127,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7275837093516337807}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: b9a1e977293757e46907175ccb664104, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -87,8 +139,8 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 1
+  m_Radius: 0
+  m_Height: 0
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &511146802161224790
@@ -115,9 +167,9 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &1658337100854523952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -130,37 +182,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45747ec6236afe24d9fbf42a450f3054, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _girlModel: {fileID: 1740988666024782208}
-  _girlSize: {x: 0, y: 0, z: 0}
-  _boyModel: {fileID: 6990707838857035682}
-  _boySize: {x: 0, y: 0, z: 0}
-  _walkSpeed: 3
+  _GirlModel: {fileID: 1740988666024782208}
+  _girlSize: {x: 1, y: 1.5, z: 1}
+  _BoyModel: {fileID: 6990707838857035682}
+  _BoySize: {x: 1, y: 1.5, z: 1}
+  _walkSpeed: 4
   _runSpeed: 6
   _accelerationTime: 0.3
   _decelerationTime: 0.1
-  _airWalkSpeed: 1
-  _airRunSpeed: 5
-  _airAccelerationTime: 0.1
-  _airDecelerationTime: 0.1
+  _airWalkSpeed: 5
+  _airRunSpeed: 6
+  _airAccelerationTime: 0.2
+  _airDecelerationTime: 0.2
   _jumpHeight: 1.5
-  _timeToJumpApex: 0.4
-  _desiredJumpLengthWalk: 4
-  _desiredJumpLengthRun: 6
+  _timeToJumpApex: 0.5
   _upwardMovementMultiplier: 1
-  _downwardMovementMultiplier: 2
+  _downwardMovementMultiplier: 0.9
   _jumpCutOff: 2
   _fallSpeedLimit: 10
   _maxAirJumps: 0
+  _pushConfig: {fileID: 11400000, guid: 9d559ac28b5bbb74a86e2a6836118550, type: 2}
   _enableCoyoteTime: 1
   _enableJumpBuffer: 1
   _coyoteTimeDuration: 0.15
   _jumpBufferDuration: 0.15
-  _cameraPosition: {fileID: 8906524014230344564}
-  _isBoy: 0
-  _isGirl: 0
   _groundLayer:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 2176
+  _beamLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  _beamLayerZ:
+    serializedVersion: 2
+    m_Bits: 1024
+  _cameraPosition: {fileID: 0}
+  _isBoy: 1
+  _isGirl: 0
 --- !u!1001 &618964781990543990
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -175,7 +232,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7415334245341175346, guid: 34f6a3d82b733384cbb8ee511b48cf0b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.904
       objectReference: {fileID: 0}
     - target: {fileID: 7415334245341175346, guid: 34f6a3d82b733384cbb8ee511b48cf0b, type: 3}
       propertyPath: m_LocalPosition.z
