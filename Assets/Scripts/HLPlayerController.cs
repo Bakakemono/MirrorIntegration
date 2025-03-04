@@ -225,20 +225,25 @@ public class HLPlayerController : MonoBehaviour
 
     private void HandleBeamMovement(Vector3 inputDirection)
     {
-        // Only use X component and reduce speed
-        Vector3 beamMovement = new Vector3(inputDirection.x, 0, 0);
+        // Move only along the X-axis and reduce speed
         _currentSpeed = _walkSpeed * 0.6f;
-        _rigidbody.velocity = new Vector3(beamMovement.x * _currentSpeed, _rigidbody.velocity.y, 0);
+
+        _rigidbody.velocity = new Vector3(
+            inputDirection.x * _currentSpeed, 
+            _rigidbody.velocity.y,            
+            0                                 
+        );
     }
 
     private void HandleBeamMovementZ(Vector3 inputDirection)
     {
-        // Only use Z component, ignore X and Y inputs completely
+        // Move only along the Z-axis, ignoring X and Y inputs
         _currentSpeed = _walkSpeed * 0.6f;
+
         _rigidbody.velocity = new Vector3(
-            0, // Force X to 0
-            _rigidbody.velocity.y,
-            inputDirection.z * _currentSpeed // Only use Z movement
+            0,                                
+            _rigidbody.velocity.y,            
+            inputDirection.z * _currentSpeed
         );
     }
 
