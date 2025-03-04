@@ -5,77 +5,92 @@ public class PlanetOrbit : MonoBehaviour
 {
     [SerializeField] private Transform sun;
     [SerializeField] private float orbitSpeed = 10f;
-    [SerializeField] private float transitionDuration = 2f; // Duration to stop/start
+    [SerializeField] private float transitionDuration = 2f;
 
     private bool _isOrbiting = true;
     private float _currentSpeed;
-    private float _targetSpeed;
+    private float _targetAngle;
+    private float _currentAngle;
+    private bool _isAligning = false;
+    private float _orbitRadius;
 
-    // Speed state tracking
+    public bool IsAligning => _isAligning;
     public bool IsAtFullSpeed { get; private set; } = true;
-    public bool IsStopped { get; private set; } = false;
 
-    // Events for state changes
-    public event Action OnFullSpeedReached;
-    public event Action OnFullStop;
+    public event Action OnAlignmentComplete;
 
     private void Start()
     {
         _currentSpeed = orbitSpeed;
-        _targetSpeed = orbitSpeed;
         IsAtFullSpeed = true;
+
+        // Calculate initial orbit radius
+        if (sun != null)
+        {
+            _orbitRadius = Vector3.Distance(transform.position, sun.position);
+        }
     }
 
     void Update()
     {
-        if (sun != null)
+        if (sun == null) return;
+
+        if (_isOrbiting && !_isAligning)
         {
-            // Calculate how much to change speed this frame
-            float speedChange = (orbitSpeed / transitionDuration) * Time.deltaTime;
-
-            // Smoothly adjust speed
-            _currentSpeed = Mathf.MoveTowards(_currentSpeed, _targetSpeed, speedChange);
-
-            // Check for state changes
-            CheckSpeedState();
-
-            // Rotate around the sun
-            transform.RotateAround(sun.position, Vector3.up, _currentSpeed * Time.deltaTime);
+            // Normal orbit mode
+            transform.RotateAround(sun.position, Vector3.up, orbitSpeed * Time.deltaTime);
         }
-    }
-
-    private void CheckSpeedState()
-    {
-        // Check if reached full speed
-        if (!IsAtFullSpeed && Mathf.Approximately(_currentSpeed, orbitSpeed))
+        else if (_isAligning)
         {
-            IsAtFullSpeed = true;
-            IsStopped = false;
-            OnFullSpeedReached?.Invoke();
-        }
+            // Smoothly rotate around to target angle
+            float angleDelta = Mathf.SmoothDampAngle(_currentAngle, _targetAngle,
+                ref _currentSpeed, transitionDuration);
 
-        // Check if fully stopped
-        if (!IsStopped && Mathf.Approximately(_currentSpeed, 0f))
-        {
-            IsStopped = true;
-            IsAtFullSpeed = false;
-            OnFullStop?.Invoke();
+            float angleToRotate = angleDelta - _currentAngle;
+            _currentAngle = angleDelta;
+
+            transform.RotateAround(sun.position, Vector3.up, angleToRotate);
+
+            // Check if alignment is complete
+            if (Mathf.Abs(Mathf.DeltaAngle(_currentAngle, _targetAngle)) < 0.1f)
+            {
+                _isAligning = false;
+                OnAlignmentComplete?.Invoke();
+            }
         }
     }
 
     public void SetOrbiting(bool value)
     {
         _isOrbiting = value;
-        _targetSpeed = value ? orbitSpeed : 0f;
+        _isAligning = false;
 
-        // Reset state flags when changing direction
         if (value)
         {
-            IsStopped = false;
+            IsAtFullSpeed = true;
         }
-        else
-        {
-            IsAtFullSpeed = false;
-        }
+    }
+
+    public void AlignToPosition(Vector3 alignmentPosition)
+    {
+        if (sun == null) return;
+
+        // Calculate the direction vector from sun to alignment position
+        Vector3 alignmentDirection = (alignmentPosition - sun.position).normalized;
+
+        // Calculate the angle in the XZ plane
+        float targetAngle = Mathf.Atan2(alignmentDirection.x, alignmentDirection.z) * Mathf.Rad2Deg;
+
+        // Get current angle
+        Vector3 relativePos = transform.position - sun.position;
+        _currentAngle = Mathf.Atan2(relativePos.x, relativePos.z) * Mathf.Rad2Deg;
+
+        // Set target angle
+        _targetAngle = targetAngle;
+
+        // Start alignment process
+        _isOrbiting = false;
+        _isAligning = true;
+        IsAtFullSpeed = false;
     }
 }

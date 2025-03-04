@@ -4,40 +4,31 @@ using UnityEngine.Events;
 public class PressurePlatePlanetarium : MonoBehaviour
 {
     [Header("Settings")]
-    [SerializeField] private float pressDepth = 0.1f;
-    [SerializeField] private bool stayPressed = false;
-    [SerializeField] private PlanetGroupController planetGroup;
+    [SerializeField] private float pressDepth = 0.1f;    // How far the plate moves down
+    [SerializeField] private bool stayPressed = false;   // If true, stays pressed after first activation
 
     [Header("Events")]
-    public UnityEvent onPressed;
-    public UnityEvent onReleased;
+    public UnityEvent onPressed;    // Called when plate is pressed
+    public UnityEvent onReleased;   // Called when plate is released
 
     private bool isPressed = false;
-    private bool canUse = true;
     private Vector3 originalPosition;
     private Vector3 pressedPosition;
-    private Transform visualPlate;
+    private Transform visualPlate;   // The visual part that moves down
 
     private void Start()
     {
+        // Get or create the visual part
         visualPlate = transform.Find("Visual") ?? transform;
         originalPosition = visualPlate.localPosition;
         pressedPosition = originalPosition + (Vector3.down * pressDepth);
-
-        if (planetGroup != null)
-        {
-            planetGroup.OnAllPlanetsFullSpeed += () => canUse = true;
-            planetGroup.OnAllPlanetsStopped += () => canUse = stayPressed; // Can only use again if stayPressed
-        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
         Debug.Log($"Trigger Enter by Tag: {other.tag}");
         Debug.Log($"Trigger Enter by Layer: {other.gameObject.layer.ToString()}");
-
-        // Only work if planets are at full speed
-        if (canUse && (other.CompareTag("Player") || other.gameObject.layer == 6))
+        if (other.CompareTag("Player") || other.gameObject.layer == 6)
         {
             Debug.Log("Pressing plate");
             PressPlate();
@@ -57,9 +48,8 @@ public class PressurePlatePlanetarium : MonoBehaviour
         if (!isPressed)
         {
             isPressed = true;
-            canUse = false; // Cannot use again until planets are fully stopped or started
             visualPlate.localPosition = pressedPosition;
-            onPressed?.Invoke();
+            onPressed?.Invoke(); // This should call PlanetAligner.AlignPlanets()
         }
     }
 
@@ -68,9 +58,8 @@ public class PressurePlatePlanetarium : MonoBehaviour
         if (isPressed)
         {
             isPressed = false;
-            canUse = false; // Cannot use again until planets are fully started
             visualPlate.localPosition = originalPosition;
-            onReleased?.Invoke();
+            onReleased?.Invoke(); // This should call PlanetAligner.ResumeOrbits()
         }
     }
 }
