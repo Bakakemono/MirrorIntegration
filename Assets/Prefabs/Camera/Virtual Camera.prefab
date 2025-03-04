@@ -25,14 +25,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5312816724574072853}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0668725, y: -1.2232195e-15, z: 4.1033803e-17, w: 0.99776155}
+  m_LocalRotation: {x: 0.066874735, y: 0, z: 0, w: 0.99776137}
   m_LocalPosition: {x: 12.25, y: 42.254456, z: -9.040561}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7907544867689794519}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 27.537, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 7.669, y: 0, z: 0}
 --- !u!114 &5550789365371920744
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -82,7 +82,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7907544867689794519}
   - component: {fileID: 2674437207552485290}
-  - component: {fileID: 8505280708664044824}
+  - component: {fileID: 1789817691666896253}
   m_Layer: 0
   m_Name: cm
   m_TagString: Untagged
@@ -117,7 +117,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0b09e7857660247b1477e93731de29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &8505280708664044824
+--- !u!114 &1789817691666896253
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -129,13 +129,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ad980451443d70438faac0bc6c235a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_TrackedObjectOffset: {x: 0, y: 0.42, z: -1.3}
-  m_LookaheadTime: 0.138
-  m_LookaheadSmoothing: 20.59
-  m_LookaheadIgnoreY: 1
-  m_XDamping: 0
-  m_YDamping: 0.3
-  m_ZDamping: 0.3
+  m_TrackedObjectOffset: {x: 0, y: 0.88, z: 0}
+  m_LookaheadTime: 0.307
+  m_LookaheadSmoothing: 10
+  m_LookaheadIgnoreY: 0
+  m_XDamping: 1
+  m_YDamping: 2
+  m_ZDamping: 2
   m_TargetMovementOnly: 1
   m_ScreenX: 0.5
   m_ScreenY: 0.5
