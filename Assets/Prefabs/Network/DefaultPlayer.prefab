@@ -201,6 +201,7 @@ MonoBehaviour:
   _climbMaxDistance: 0
   _climbMaxHeight: 0
   _pushConfig: {fileID: 11400000, guid: 9d559ac28b5bbb74a86e2a6836118550, type: 2}
+  _config: {fileID: 11400000, guid: 1f01b0205334088439ed94a3c17187d8, type: 2}
   _gravityScale: 1
   _cameraPosition: {fileID: 6167485950547064502}
   _isBoy: 0

@@ -1,6 +1,7 @@
 using Mirror;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.BC;
+using Org.BouncyCastle.Asn1.TeleTrust;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -83,6 +84,7 @@ public class PlayerController : NetworkBehaviour {
     float _playerHeight = 0f;
 
     [SerializeField] PushConfig _pushConfig;
+    [SerializeField] ClimbConfig _config;
 
     [Header("Gravity")]
     [SerializeField] float _gravityScale = 1f;
@@ -104,13 +106,14 @@ public class PlayerController : NetworkBehaviour {
     private bool _isRunning = false; // Variable to track running state
 
     PlayerPush _playerPush;
+    PlayerClimb _playerClimb;
 
     private void Start() {
         DontDestroyOnLoad(gameObject);
         _rigidbody = GetComponent<Rigidbody>();
         _capsuleCollider = GetComponent<CapsuleCollider>();
         _playerPush = new PlayerPush(new RuntimePushConfig(_pushConfig), transform, _rigidbody);
-
+        _playerClimb = new PlayerClimb(_config, transform);
         if(isLocalPlayer) {
 
             CameraBehavior._instance.SetPlayer(transform);
@@ -189,6 +192,10 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void Update() {
+        //if(true) {
+        //    Debug.Log("HELLO");
+        //    return;
+        //}
         if(!isLocalPlayer)
             return;
 
@@ -200,6 +207,9 @@ public class PlayerController : NetworkBehaviour {
             _playerPush.WhilePushing(_movementAction.ReadValue<Vector2>());
             return;
         }
+        if(_playerClimb._isClimbing) {
+            _playerClimb.Climb();
+        }
 
         GroundCheck();
 
@@ -209,7 +219,10 @@ public class PlayerController : NetworkBehaviour {
 
         Movement();
 
-        ClimbCheck();
+        //ClimbCheck();
+
+        if(_isJumping)
+            _playerClimb.ClimbCheck();
     }
 
     private void FixedUpdate() {
@@ -390,74 +403,20 @@ public class PlayerController : NetworkBehaviour {
         _isRunning = false;
     }
 
-    void ClimbCheck() {
-        if(_isJumping)
-            return;
+    
 
-        Collider[] climbableObject =
-            Physics.OverlapBox(
-                transform.position +
-                    (transform.forward * _climbMaxDistance + transform.forward * _playerWidth) / 2f +
-                    (Vector3.up * _climbMaxHeight + Vector3.up * (transform.position.y - _playerHeight / 2f)) / 2f,
-                new Vector3(_playerWidth, _climbMaxHeight / 2f, _climbMaxDistance / 2f),
-                transform.rotation);
-
-        Collider[] notClimbableObject =
-            Physics.OverlapBox(
-                transform.position +
-                    (transform.forward * _climbMaxDistance + transform.forward * _playerWidth) / 2f +
-                    (Vector3.up * _climbMaxHeight + Vector3.up * (transform.position.y - _playerHeight / 2f)) / 2f + Vector3.up * _climbMaxHeight,
-                new Vector3(_playerWidth, _climbMaxHeight / 2f, _climbMaxDistance / 2f),
-                transform.rotation
-                );
-
-        if(climbableObject.Length > 0) {
-            if(notClimbableObject.Length > 0 && climbableObject[0] == notClimbableObject[0]) {
-                return;
-            }
-            else {
-                RaycastHit hit;
-                if(Physics.Raycast(
-                    transform.position + transform.forward * (_playerWidth + 0.05f),
-                    transform.forward,
-                    out hit,
-                    _climbMaxDistance)) {
-                    Debug.Log("Middle Climb Detected");
-                    return;
-                }
-
-                if(Physics.Raycast(
-                    transform.position + transform.forward * (_playerWidth + 0.05f) + -transform.right * _playerWidth,
-                    transform.forward,
-                    out hit,
-                    _climbMaxDistance)) {
-                    Debug.Log("Left Climb Detected");
-                    return;
-                }
-
-                if(Physics.Raycast(
-                    transform.position + transform.forward * (_playerWidth + 0.05f) + transform.right * _playerWidth,
-                    transform.forward,
-                    out hit,
-                    _climbMaxDistance)) {
-                    Debug.Log("Right Climb Detected");
-                    return;
-                }
-            }
-        }
-    }
-
-    private void OnDrawGizmosSelected() {
+    private void OnDrawGizmos() {
         // Visualize the ground check sphere
-        if(_capsuleCollider != null) {
-            Gizmos.color = Color.red;
-            float radius = _capsuleCollider.radius * 0.9f;
-            Vector3 origin = transform.position + Vector3.up * (_capsuleCollider.height / 2 - _capsuleCollider.radius);
-            float maxDistance = (_capsuleCollider.height / 2 - _capsuleCollider.radius) + 0.1f;
-            Gizmos.DrawWireSphere(origin + Vector3.down * maxDistance, radius);
-        }
+        //if(_capsuleCollider != null) {
+        //    Gizmos.color = Color.red;
+        //    float radius = _capsuleCollider.radius * 0.9f;
+        //    Vector3 origin = transform.position + Vector3.up * (_capsuleCollider.height / 2 - _capsuleCollider.radius);
+        //    float maxDistance = (_capsuleCollider.height / 2 - _capsuleCollider.radius) + 0.1f;
+        //    Gizmos.DrawWireSphere(origin + Vector3.down * maxDistance, radius);
+        //}
 
         _playerPush.DrawGizmos();
+        _playerClimb.DrawGizmos();
     }
 
     private void OnRespawn(InputAction.CallbackContext context) {
@@ -496,7 +455,7 @@ public class PlayerController : NetworkBehaviour {
         }
         _playerBodySelected = true;
 
-        _playerWidth = capsuleCollider.radius;
+        _playerWidth = capsuleCollider.radius * 2f;
         _playerHeight = capsuleCollider.height;
     }
 

@@ -90,16 +90,18 @@ public class PlayerPush {
     }
 
     public void DrawGizmos() {
-        if(_config._grabBoxDetectionPostion == null)
+        if(_playerTransform == null)
             return;
 
+        Matrix4x4 defaultMatrix = Gizmos.matrix;
         Gizmos.matrix = _playerTransform.localToWorldMatrix;
+
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(
             _config._grabBoxDetectionPostion,
             _config._grabBoxDetectionDimension
-            );
+        );
 
-        Gizmos.matrix = _playerTransform.worldToLocalMatrix;
+        Gizmos.matrix = defaultMatrix;
     }
 }
